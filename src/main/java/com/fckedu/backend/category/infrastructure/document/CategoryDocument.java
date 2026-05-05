@@ -10,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,6 +24,9 @@ public class CategoryDocument {
 
     private String subject;
     private String chapter;
+
+    @Builder.Default
+    private List<LessonDataDoc> lessons = new ArrayList<>();
 
     @CreatedDate
     private Instant createAt;
