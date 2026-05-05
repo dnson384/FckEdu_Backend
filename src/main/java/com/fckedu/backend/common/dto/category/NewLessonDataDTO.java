@@ -1,9 +1,9 @@
-package com.fckedu.backend.common.dto;
+package com.fckedu.backend.common.dto.category;
 
 import java.util.List;
 
 public class NewLessonDataDTO {
-    List<BankStatDTO> bankStats;
+    List<NewBankStatDTO> bankStats;
     private String name;
 
     public NewLessonDataDTO() {
@@ -17,11 +17,11 @@ public class NewLessonDataDTO {
         this.name = name;
     }
 
-    public List<BankStatDTO> getBankStats() {
+    public List<NewBankStatDTO> getBankStats() {
         return bankStats;
     }
 
-    public void setBankStats(List<BankStatDTO> bankStats) {
+    public void setBankStats(List<NewBankStatDTO> bankStats) {
         this.bankStats = bankStats;
     }
 }

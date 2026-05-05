@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "Questions")
-@CompoundIndex(name = "chapter_lesson_idx", def = "{'chapterId': 1, 'lessonId': 1}")
+@CompoundIndex(name = "chapter_lesson_idx", def = "{'chapterId': 1, 'lessonId': 1}", unique = true)
 public class QuestionDocument {
     @Id
     private String id;

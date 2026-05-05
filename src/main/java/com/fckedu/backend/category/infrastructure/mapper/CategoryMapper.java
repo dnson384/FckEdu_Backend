@@ -58,7 +58,7 @@ public class CategoryMapper {
                 .toList();
 
         return new LessonDataEntity(
-                lesson.getId(),
+                lesson.getId().toString(),
                 lesson.getName(),
                 bankStatEntities
         );
@@ -75,10 +75,14 @@ public class CategoryMapper {
                 ))
                 .toList();
 
-        return new LessonDataDoc(
-                lesson.getId(),
-                lesson.getName(),
-                bankStatDocs
-        );
+        ObjectId lessonId = (lesson.getId() != null)
+                ? new ObjectId(lesson.getId())
+                : new ObjectId();
+
+        return LessonDataDoc.builder()
+                .id(lessonId)
+                .name(lesson.getName())
+                .bankStats(bankStatDocs)
+                .build();
     }
 }

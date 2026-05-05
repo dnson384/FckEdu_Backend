@@ -1,16 +1,16 @@
-package com.fckedu.backend.common.dto;
+package com.fckedu.backend.common.dto.category;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BankStatDTO {
+public class NewBankStatDTO {
     private String exerciseType;
     private List<String> difficultyLevels;
     private List<String> learningOutcomes;
     private String questionType;
     private int count;
 
-    public BankStatDTO() {
+    public NewBankStatDTO() {
         this.exerciseType = "";
         this.difficultyLevels = new ArrayList<String>();
         this.learningOutcomes = new ArrayList<String>();
@@ -18,11 +18,11 @@ public class BankStatDTO {
         this.count = 1;
     }
 
-    public BankStatDTO(String exerciseType,
-                       List<String> difficultyLevels,
-                       List<String> learningOutcomes,
-                       String questionType,
-                       int count) {
+    public NewBankStatDTO(String exerciseType,
+                          List<String> difficultyLevels,
+                          List<String> learningOutcomes,
+                          String questionType,
+                          int count) {
         this.exerciseType = exerciseType;
         this.difficultyLevels = difficultyLevels;
         this.learningOutcomes = learningOutcomes;

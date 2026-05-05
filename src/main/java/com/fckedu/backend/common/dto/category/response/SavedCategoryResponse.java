@@ -1,4 +1,4 @@
-package com.fckedu.backend.category.dto.response;
+package com.fckedu.backend.common.dto.category.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

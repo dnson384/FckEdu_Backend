@@ -8,9 +8,11 @@ import com.fckedu.backend.question.infrastructure.document.OptionDataDoc;
 import com.fckedu.backend.question.infrastructure.document.QuestionContentDoc;
 import com.fckedu.backend.question.infrastructure.document.QuestionDocument;
 import com.fckedu.backend.question.infrastructure.document.VariablesDoc;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class QuestionMapper {
     public QuestionEntity toEntity(QuestionDocument raw) {
         QuestionEntity newQuestionEntity = new QuestionEntity();

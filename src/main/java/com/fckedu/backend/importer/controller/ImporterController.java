@@ -1,6 +1,5 @@
 package com.fckedu.backend.importer.controller;
 
-import com.fckedu.backend.importer.dto.parsed.ParsedDataOutput;
 import com.fckedu.backend.importer.service.ImporterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class ImporterController {
         try {
             byte[] fileBytes = file.getBytes();
 
-            ParsedDataOutput result = importerService.execute(fileBytes, subject);
+            boolean result = importerService.execute(fileBytes, subject);
 
             return ResponseEntity.ok(result);
         } catch (Exception e) {

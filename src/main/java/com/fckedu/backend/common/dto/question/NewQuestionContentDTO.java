@@ -1,4 +1,4 @@
-package com.fckedu.backend.question.domain.entity;
+package com.fckedu.backend.common.dto.question;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OptionDataEntity {
+public class NewQuestionContentDTO {
     private String template;
 
     @Builder.Default
-    private VariablesEntity variables = new VariablesEntity();
+    private NewVariablesDTO variables = new NewVariablesDTO();
+
 }

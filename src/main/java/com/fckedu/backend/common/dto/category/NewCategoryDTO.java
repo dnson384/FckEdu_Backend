@@ -1,4 +1,4 @@
-package com.fckedu.backend.common.dto;
+package com.fckedu.backend.common.dto.category;
 
 import lombok.Data;
 

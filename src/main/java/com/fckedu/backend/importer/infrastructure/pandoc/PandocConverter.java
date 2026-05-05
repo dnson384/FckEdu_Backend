@@ -136,6 +136,7 @@ public class PandocConverter {
                         if (level == 1) {
                             questionsRes.add(new NewQuestionImporterDTO());
                             questionsRes.get(questionsRes.size() - 1).setExerciseType(text);
+                            tempBankStat.setExerciseType(text);
                         }
                         // Độ khó
                         else if (level == 2) {
