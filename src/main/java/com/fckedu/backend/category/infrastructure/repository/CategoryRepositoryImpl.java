@@ -26,7 +26,7 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
     }
 
     @Override
-    public SavedCategoryResponse SaveCategory(CategoryEntity category) {
+    public SavedCategoryResponse saveCategory(CategoryEntity category) {
         CategoryDocument categoryDocument = categoryMapper.toDocument(category);
 
         // Tìm kiếm chương đã tồn tại
