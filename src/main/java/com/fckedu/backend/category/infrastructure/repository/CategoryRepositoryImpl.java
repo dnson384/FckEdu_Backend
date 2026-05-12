@@ -2,6 +2,7 @@ package com.fckedu.backend.category.infrastructure.repository;
 
 import com.fckedu.backend.category.domain.entity.CategoryEntity;
 import com.fckedu.backend.category.domain.repository.ICategoryRepository;
+import com.fckedu.backend.category.exception.NotFoundException;
 import com.fckedu.backend.category.infrastructure.document.BankStatDoc;
 import com.fckedu.backend.category.infrastructure.document.CategoryDocument;
 import com.fckedu.backend.category.infrastructure.document.LessonDataDoc;
@@ -92,4 +93,37 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
 
         return new SavedCategoryResponse(existedChapter.getId(), targetLessonId);
     }
+
+    @Override
+    public List<CategoryEntity> getAll() {
+        List<CategoryDocument> categories = mongoTemplate.findAll(CategoryDocument.class);
+        return categories.stream()
+                .map(categoryMapper::toEntity)
+                .toList();
+    }
+
+    @Override
+    public CategoryEntity getById(String chapterId) {
+        CategoryDocument category = mongoTemplate.findById(chapterId, CategoryDocument.class);
+        if (category == null) {
+            throw new NotFoundException("Không tồn tại chương này");
+        }
+
+        return categoryMapper.toEntity(category);
+    }
+
+    @Override
+    public List<CategoryEntity> getByIds(List<String> chapterIds) {
+        Query query = new Query(Criteria.where("_id").in(chapterIds));
+        List<CategoryDocument> categories = mongoTemplate.find(query, CategoryDocument.class);
+
+        if (categories.isEmpty()) {
+            throw new NotFoundException("Không tồn tại chương này");
+        }
+
+        return categories.stream()
+                .map(categoryMapper::toEntity)
+                .toList();
+    }
+
 }

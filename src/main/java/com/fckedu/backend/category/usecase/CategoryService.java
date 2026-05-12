@@ -30,6 +30,10 @@ public class CategoryService {
         return repo.saveCategory(newCategoryEntity);
     }
 
+    public List<CategoryEntity> getByIds(List<String> chapterIds) {
+        return repo.getByIds(chapterIds);
+    }
+
     private LessonDataEntity mapLessonToEntity(NewLessonDataDTO lesson) {
         LessonDataEntity lessonDataEntity = new LessonDataEntity();
         lessonDataEntity.setName(lesson.getName());
