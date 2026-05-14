@@ -36,4 +36,9 @@ public class DraftController {
     public ResponseEntity<Boolean> updateLessons(@RequestBody UpdateLessonsDraftDTO payload) {
         return ResponseEntity.ok(draftUsecase.updateLessons(payload));
     }
+
+    @PutMapping("generate-matrix")
+    public ResponseEntity<Boolean> generateMatrix(@RequestParam String draftId) {
+        return ResponseEntity.ok(draftUsecase.generateMatrix(draftId));
+    }
 }

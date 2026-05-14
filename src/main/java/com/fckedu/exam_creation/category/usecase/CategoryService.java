@@ -6,6 +6,9 @@ import com.fckedu.exam_creation.category.domain.entity.LessonDataEntity;
 import com.fckedu.exam_creation.category.domain.repository.ICategoryRepository;
 import com.fckedu.exam_creation.common.dto.category.NewCategoryDTO;
 import com.fckedu.exam_creation.common.dto.category.NewLessonDataDTO;
+import com.fckedu.exam_creation.common.dto.category.response.BankStatResponseDTO;
+import com.fckedu.exam_creation.common.dto.category.response.CategoryResponseDTO;
+import com.fckedu.exam_creation.common.dto.category.response.LessonDataResponseDTO;
 import com.fckedu.exam_creation.common.dto.category.response.SavedCategoryResponse;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +33,19 @@ public class CategoryService {
         return repo.saveCategory(newCategoryEntity);
     }
 
-    public List<CategoryEntity> getByIds(List<String> chapterIds) {
-        return repo.getByIds(chapterIds);
+    public List<CategoryResponseDTO> getByIds(List<String> chapterIds) {
+        List<CategoryEntity> categories = repo.getByIds(chapterIds);
+
+        return categories.stream()
+                .map(category -> new CategoryResponseDTO(
+                        category.getId(),
+                        category.getSubject(),
+                        category.getChapter(),
+                        category.getLessons().stream()
+                                .map(this::mapLessonEntityToDTO)
+                                .toList())
+                )
+                .toList();
     }
 
     private LessonDataEntity mapLessonToEntity(NewLessonDataDTO lesson) {
@@ -51,5 +65,24 @@ public class CategoryService {
 
         lessonDataEntity.setBankStats(bankStatEntity);
         return lessonDataEntity;
+    }
+
+    private LessonDataResponseDTO mapLessonEntityToDTO(LessonDataEntity lesson) {
+        LessonDataResponseDTO lessonDTO = new LessonDataResponseDTO();
+        lessonDTO.setId(lesson.getId());
+        lessonDTO.setName(lesson.getName());
+
+        List<BankStatResponseDTO> bankStatDTO = lessonDTO.getBankStats().stream()
+                .map(bankStat -> new BankStatResponseDTO(
+                        bankStat.getExerciseType(),
+                        bankStat.getDifficultyLevels(),
+                        bankStat.getLearningOutcomes(),
+                        bankStat.getQuestionType(),
+                        bankStat.getCount()
+                ))
+                .toList();
+
+        lessonDTO.setBankStats(bankStatDTO);
+        return lessonDTO;
     }
 }
