@@ -1,6 +1,8 @@
 package com.fckedu.exam_creation.draft.controller;
 
 import com.fckedu.exam_creation.draft.dto.request.CreateDraftDTO;
+import com.fckedu.exam_creation.draft.dto.request.UpdateChaptersDraftDTO;
+import com.fckedu.exam_creation.draft.dto.request.UpdateLessonsDraftDTO;
 import com.fckedu.exam_creation.draft.dto.response.DraftDTO;
 import com.fckedu.exam_creation.draft.usecase.DraftUsecase;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +25,15 @@ public class DraftController {
     @GetMapping("/{draftId}")
     public ResponseEntity<DraftDTO> getDraft(@PathVariable String draftId) {
         return ResponseEntity.ok(draftUsecase.getDraft(draftId));
+    }
+
+    @PutMapping("/chapter")
+    public ResponseEntity<Boolean> updateChapters(@RequestBody UpdateChaptersDraftDTO payload) {
+        return ResponseEntity.ok(draftUsecase.updateChapters(payload));
+    }
+
+    @PutMapping("/lesson")
+    public ResponseEntity<Boolean> updateLessons(@RequestBody UpdateLessonsDraftDTO payload) {
+        return ResponseEntity.ok(draftUsecase.updateLessons(payload));
     }
 }
