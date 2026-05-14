@@ -1,0 +1,17 @@
+package com.fckedu.exam_creation.draft.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DraftDTO {
+    String id;
+    Integer questionsCount;
+    List<String> questionTypes;
+    List<ChapterDraftDTO> chapters;
+}

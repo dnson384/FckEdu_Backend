@@ -1,0 +1,27 @@
+package com.fckedu.exam_creation.draft.controller;
+
+import com.fckedu.exam_creation.draft.dto.request.CreateDraftDTO;
+import com.fckedu.exam_creation.draft.dto.response.DraftDTO;
+import com.fckedu.exam_creation.draft.usecase.DraftUsecase;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/draft")
+public class DraftController {
+    private final DraftUsecase draftUsecase;
+
+    public DraftController(DraftUsecase draftUsecase) {
+        this.draftUsecase = draftUsecase;
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<String> createDraft(@RequestBody CreateDraftDTO payload) {
+        return ResponseEntity.ok(draftUsecase.createDraft(payload));
+    }
+
+    @GetMapping("/{draftId}")
+    public ResponseEntity<DraftDTO> getDraft(@PathVariable String draftId) {
+        return ResponseEntity.ok(draftUsecase.getDraft(draftId));
+    }
+}
