@@ -1,9 +1,9 @@
 package com.fckedu.exam_creation.draft.controller;
 
+import com.fckedu.exam_creation.common.dto.draft.response.DraftDTO;
 import com.fckedu.exam_creation.draft.dto.request.CreateDraftDTO;
 import com.fckedu.exam_creation.draft.dto.request.UpdateChaptersDraftDTO;
 import com.fckedu.exam_creation.draft.dto.request.UpdateLessonsDraftDTO;
-import com.fckedu.exam_creation.draft.dto.response.DraftDTO;
 import com.fckedu.exam_creation.draft.usecase.DraftUsecase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,5 +40,10 @@ public class DraftController {
     @PutMapping("generate-matrix")
     public ResponseEntity<Boolean> generateMatrix(@RequestParam String draftId) {
         return ResponseEntity.ok(draftUsecase.generateMatrix(draftId));
+    }
+
+    @PutMapping("generate-matrix-details")
+    public ResponseEntity<Boolean> generateMatrixDetails(@RequestParam String draftId) {
+        return ResponseEntity.ok(draftUsecase.generateMatrixDetails(draftId));
     }
 }

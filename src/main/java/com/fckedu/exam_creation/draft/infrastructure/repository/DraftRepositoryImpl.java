@@ -68,7 +68,7 @@ public class DraftRepositoryImpl implements IDraftRepository {
             List<ChapterDraftDoc> chaptersToAdd = payload.getAdd().stream()
                     .filter(chapter -> !chapterIds.contains(chapter.getId()))
                     .map(chapter -> new ChapterDraftDoc(
-                            new ObjectId(chapter.getId()),
+                            chapter.getId(),
                             chapter.getName(),
                             new ArrayList<>()
                     ))
@@ -108,12 +108,12 @@ public class DraftRepositoryImpl implements IDraftRepository {
         DraftDocument draft = draftMapper.toDocument(getDraft(payload.getDraftId()));
 
         ChapterDraftDoc curChapter = draft.getChapters().stream()
-                .filter(c -> c.getId().toString().equals(payload.getChapterId()))
+                .filter(c -> c.getId().equals(payload.getChapterId()))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Chương không tồn tại trong bản nháp"));
 
         List<String> curLessonIds = curChapter.getLessons().stream()
-                .map(lesson -> lesson.getId().toString())
+                .map(LessonDraftDoc::getId)
                 .toList();
 
         Update update = new Update();
@@ -124,7 +124,7 @@ public class DraftRepositoryImpl implements IDraftRepository {
             List<LessonDraftDoc> lessonsToAdd = payload.getAdd().stream()
                     .filter(lesson -> !curLessonIds.contains(lesson.getId()))
                     .map(lesson -> new LessonDraftDoc(
-                            new ObjectId(lesson.getId()),
+                            lesson.getId(),
                             lesson.getName(),
                             new ArrayList<>(),
                             new ArrayList<>()

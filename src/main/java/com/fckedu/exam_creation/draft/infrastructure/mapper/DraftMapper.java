@@ -1,6 +1,5 @@
-package com.fckedu.exam_creation.draft.mapper;
+package com.fckedu.exam_creation.draft.infrastructure.mapper;
 
-import com.fckedu.exam_creation.common.dto.draft.response.DraftDTO;
 import com.fckedu.exam_creation.draft.domain.entity.DraftEntity;
 import com.fckedu.exam_creation.draft.infrastructure.document.DraftDocument;
 import org.mapstruct.Mapper;
@@ -8,11 +7,10 @@ import org.mapstruct.Mapper;
 //@Component
 @Mapper(componentModel = "spring")
 public interface DraftMapper {
-    DraftEntity docToEntity(DraftDocument draftDocument);
+    DraftEntity toEntity(DraftDocument draftDocument);
 
-    DraftDocument entityToDocument(DraftEntity draftEntity);
+    DraftDocument toDocument(DraftEntity draftEntity);
 
-    DraftDTO entityToDTO(DraftEntity draftEntity);
 //    public DraftEntity toEntity(DraftDocument raw) {
 //        List<ChapterDraftEntity> chapterDraftEntities = raw.getChapters().stream()
 //                .map(chapter -> new ChapterDraftEntity(
