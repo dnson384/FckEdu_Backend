@@ -12,16 +12,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BankStatDoc {
-    private String excerciseType;
+public class LessonDataDocument {
+    private String id;
+    private String name;
 
     @Builder.Default
-    private List<String> difficultyLevels = new ArrayList<>();
-
-    @Builder.Default
-    private List<String> learningOutcomes = new ArrayList<>();
-    private String questionType;
-
-    @Builder.Default
-    private Integer count = 0;
+    private List<BankStatDocument> bankStats = new ArrayList<>();
 }

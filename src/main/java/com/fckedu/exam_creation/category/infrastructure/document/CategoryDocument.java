@@ -26,7 +26,7 @@ public class CategoryDocument {
     private String chapter;
 
     @Builder.Default
-    private List<LessonDataDoc> lessons = new ArrayList<>();
+    private List<LessonDataDocument> lessons = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createAt;

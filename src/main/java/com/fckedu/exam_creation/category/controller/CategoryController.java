@@ -1,7 +1,7 @@
 package com.fckedu.exam_creation.category.controller;
 
-import com.fckedu.exam_creation.category.dto.response.CategoryDTO;
 import com.fckedu.exam_creation.category.usecase.CategoryUsecase;
+import com.fckedu.exam_creation.common.dto.category.response.CategoryResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +19,8 @@ public class CategoryController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<CategoryDTO>> getAll() {
-        List<CategoryDTO> result = categoryUsecase.getAll();
+    public ResponseEntity<List<CategoryResponseDTO>> getAll() {
+        List<CategoryResponseDTO> result = categoryUsecase.getAll();
         return ResponseEntity.ok(result);
     }
 }

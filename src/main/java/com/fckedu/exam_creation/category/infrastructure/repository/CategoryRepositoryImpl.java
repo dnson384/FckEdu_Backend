@@ -2,12 +2,13 @@ package com.fckedu.exam_creation.category.infrastructure.repository;
 
 import com.fckedu.exam_creation.category.domain.entity.CategoryEntity;
 import com.fckedu.exam_creation.category.domain.repository.ICategoryRepository;
-import com.fckedu.exam_creation.category.infrastructure.document.BankStatDoc;
+import com.fckedu.exam_creation.category.infrastructure.document.BankStatDocument;
 import com.fckedu.exam_creation.category.infrastructure.document.CategoryDocument;
-import com.fckedu.exam_creation.category.infrastructure.document.LessonDataDoc;
+import com.fckedu.exam_creation.category.infrastructure.document.LessonDataDocument;
 import com.fckedu.exam_creation.category.infrastructure.mapper.CategoryMapper;
 import com.fckedu.exam_creation.common.dto.category.response.SavedCategoryResponse;
 import com.fckedu.exam_creation.common.exception.NotFoundException;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,13 +39,14 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
         if (existedChapter == null) {
             categoryDocument.setCreateAt(LocalDateTime.now());
             categoryDocument.setUpdatedAt(LocalDateTime.now());
+            categoryDocument.getLessons().get(0).setId(new ObjectId().toString());
             CategoryDocument created = mongoTemplate.save(categoryDocument);
 
-            return new SavedCategoryResponse(created.getId(), created.getLessons().get(0).getId().toString());
+            return new SavedCategoryResponse(created.getId(), created.getLessons().get(0).getId());
         }
 
         // Tìm bài học trong chương đã tồn tại
-        LessonDataDoc newLesson = categoryDocument.getLessons().get(0);
+        LessonDataDocument newLesson = categoryDocument.getLessons().get(0);
         int existingLessonIndex = -1;
 
         for (int index = 0; index < existedChapter.getLessons().size(); index++) {
@@ -57,28 +59,29 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
         String targetLessonId;
 
         if (existingLessonIndex == -1) {
+            newLesson.setId(new ObjectId().toString());
             existedChapter.getLessons().add(newLesson);
             existedChapter.setUpdatedAt(LocalDateTime.now());
             mongoTemplate.save(existedChapter);
 
             int lastIndex = existedChapter.getLessons().size() - 1;
-            targetLessonId = existedChapter.getLessons().get(lastIndex).getId().toString();
+            targetLessonId = existedChapter.getLessons().get(lastIndex).getId();
         } else {
-            LessonDataDoc existingLesson = existedChapter.getLessons().get(existingLessonIndex);
-            List<BankStatDoc> newBankStats = newLesson.getBankStats();
+            LessonDataDocument existingLesson = existedChapter.getLessons().get(existingLessonIndex);
+            List<BankStatDocument> newBankStats = newLesson.getBankStats();
 
             if (newBankStats != null && !newBankStats.isEmpty()) {
-                for (BankStatDoc newStat : newBankStats) {
-                    Optional<BankStatDoc> existingStatOpt = existingLesson.getBankStats().stream()
+                for (BankStatDocument newStat : newBankStats) {
+                    Optional<BankStatDocument> existingStatOpt = existingLesson.getBankStats().stream()
                             .filter(oldStat ->
-                                    oldStat.getExcerciseType().equals(newStat.getExcerciseType()) &&
+                                    oldStat.getExerciseType().equals(newStat.getExerciseType()) &&
                                             oldStat.getQuestionType().equals(newStat.getQuestionType()) &&
                                             oldStat.getDifficultyLevels().equals(newStat.getDifficultyLevels()) &&
                                             oldStat.getLearningOutcomes().equals(newStat.getLearningOutcomes())
                             ).findFirst();
 
                     if (existingStatOpt.isPresent()) {
-                        BankStatDoc existingStat = existingStatOpt.get();
+                        BankStatDocument existingStat = existingStatOpt.get();
                         existingStat.setCount(existingStat.getCount() + newStat.getCount());
                     } else {
                         existingLesson.getBankStats().add(newStat);
@@ -88,7 +91,7 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
                 mongoTemplate.save(existedChapter);
             }
 
-            targetLessonId = existingLesson.getId().toString();
+            targetLessonId = existingLesson.getId();
         }
 
         return new SavedCategoryResponse(existedChapter.getId(), targetLessonId);

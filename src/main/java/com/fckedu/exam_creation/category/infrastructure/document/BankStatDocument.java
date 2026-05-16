@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +12,16 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonDataDoc {
-    @Builder.Default
-    private String id = (new ObjectId()).toString();
-
-    private String name;
+public class BankStatDocument {
+    private String exerciseType;
 
     @Builder.Default
-    private List<BankStatDoc> bankStats = new ArrayList<>();
+    private List<String> difficultyLevels = new ArrayList<>();
+
+    @Builder.Default
+    private List<String> learningOutcomes = new ArrayList<>();
+    private String questionType;
+
+    @Builder.Default
+    private Integer count = 0;
 }
