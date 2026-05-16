@@ -1,4 +1,4 @@
-package com.fckedu.exam_creation.draft.dto.response;
+package com.fckedu.exam_creation.common.dto.draft.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

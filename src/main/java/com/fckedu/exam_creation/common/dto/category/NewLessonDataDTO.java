@@ -1,27 +1,15 @@
 package com.fckedu.exam_creation.common.dto.category;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class NewLessonDataDTO {
     List<NewBankStatDTO> bankStats;
     private String name;
-
-    public NewLessonDataDTO() {
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<NewBankStatDTO> getBankStats() {
-        return bankStats;
-    }
-
-    public void setBankStats(List<NewBankStatDTO> bankStats) {
-        this.bankStats = bankStats;
-    }
 }
