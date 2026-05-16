@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LessonDataDoc {
     @Builder.Default
-    private ObjectId id = new ObjectId();
+    private String id = (new ObjectId()).toString();
 
     private String name;
 

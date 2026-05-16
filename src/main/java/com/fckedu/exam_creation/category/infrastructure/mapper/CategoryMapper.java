@@ -75,12 +75,8 @@ public class CategoryMapper {
                 ))
                 .toList();
 
-        ObjectId lessonId = (lesson.getId() != null)
-                ? new ObjectId(lesson.getId())
-                : new ObjectId();
-
         return LessonDataDoc.builder()
-                .id(lessonId)
+                .id(lesson.getId())
                 .name(lesson.getName())
                 .bankStats(bankStatDocs)
                 .build();
