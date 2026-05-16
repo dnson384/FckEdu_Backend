@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OptionDataDoc {
+public class OptionDataDocument {
     private String template;
 
     @Builder.Default
-    private VariablesDoc variables = new VariablesDoc();
+    private VariablesDocument variables = new VariablesDocument();
 }

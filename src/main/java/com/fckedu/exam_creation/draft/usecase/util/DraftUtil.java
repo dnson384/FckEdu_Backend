@@ -148,16 +148,12 @@ public class DraftUtil {
 
                 if (lesson != null) {
                     lessonName = lesson.getName();
-                    MatrixItemDTO existingMatrixItem = lesson.getMatrix().stream()
+                    lesson.getMatrix().stream()
                             .filter(m -> m.getQuestionType().equals(targetType) &&
                                     m.getDifficultyLevel().equals(targetLevel)
                             )
-                            .findFirst()
-                            .orElse(null);
+                            .findFirst().ifPresent(existingMatrixItem -> existingMatrixItem.setSelectedCount(existingMatrixItem.getSelectedCount() + 1));
 
-                    if (existingMatrixItem != null) {
-                        existingMatrixItem.setSelectedCount(existingMatrixItem.getSelectedCount() + 1);
-                    }
                 }
             } else {
                 System.err.printf("Kho thiếu câu %s - %s - %s. Có thể do không đủ lượng câu hỏi",

@@ -30,7 +30,7 @@ public class ImporterService {
         this.fileParser = new PandocConverter();
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean execute(byte[] fileBuffer, String subject) throws Exception {
         if (subject == null || subject.trim().isEmpty()) {
             throw new IllegalArgumentException("Không tồn tại môn học");

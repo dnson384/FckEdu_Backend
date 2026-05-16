@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionContentDoc {
+public class QuestionContentDocument {
     private String template;
 
     @Builder.Default
-    private VariablesDoc variables = new VariablesDoc();
+    private VariablesDocument variables = new VariablesDocument();
 }

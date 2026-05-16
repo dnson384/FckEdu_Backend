@@ -25,5 +25,5 @@ public class DraftDocument {
     private List<String> questionTypes = new ArrayList<>();
 
     @Builder.Default
-    private List<ChapterDraftDoc> chapters = new ArrayList<>();
+    private List<ChapterDraftDocument> chapters = new ArrayList<>();
 }

@@ -10,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,7 +28,11 @@ public class QuestionDocument {
     private String id;
 
     private String subject;
+
+    @Field(targetType = FieldType.OBJECT_ID)
     private String chapterId;
+
+    @Field(targetType = FieldType.OBJECT_ID)
     private String lessonId;
 
     @Indexed
@@ -41,10 +47,10 @@ public class QuestionDocument {
     @Indexed
     private String questionType;
 
-    private QuestionContentDoc question;
+    private QuestionContentDocument question;
 
     @Builder.Default
-    private List<OptionDataDoc> options = new ArrayList<>();
+    private List<OptionDataDocument> options = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

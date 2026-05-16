@@ -1,29 +1,28 @@
 package com.fckedu.exam_creation.question.usecase;
 
 import com.fckedu.exam_creation.common.dto.question.NewQuestionDTO;
-import com.fckedu.exam_creation.question.domain.entity.OptionDataEntity;
-import com.fckedu.exam_creation.question.domain.entity.QuestionContentEntity;
 import com.fckedu.exam_creation.question.domain.entity.QuestionEntity;
-import com.fckedu.exam_creation.question.domain.entity.VariablesEntity;
+import com.fckedu.exam_creation.question.domain.repository.IQuestionRepository;
+import com.fckedu.exam_creation.question.dto.mapper.QuestionDTOMapper;
 import com.fckedu.exam_creation.question.dto.request.ExamMatrixDetailDTO;
 import com.fckedu.exam_creation.question.dto.response.ExamQuestionsDTO;
-import com.fckedu.exam_creation.question.infrastructure.repository.QuestionRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class QuestionService {
-    private final QuestionRepositoryImpl repo;
+    private final IQuestionRepository repo;
+    private final QuestionDTOMapper mapper;
 
-    public QuestionService(QuestionRepositoryImpl repo) {
+    public QuestionService(IQuestionRepository repo, QuestionDTOMapper mapper) {
         this.repo = repo;
+        this.mapper = mapper;
     }
 
-    public boolean insert(List<NewQuestionDTO> questions) {
-        List<QuestionEntity> newQuestionsEntity = questions.stream().map(this::mapQuestionToEntity).toList();
-
-        return repo.saveQuestions(newQuestionsEntity);
+    public void insert(List<NewQuestionDTO> questions) {
+        List<QuestionEntity> newQuestionsEntity = questions.stream().map(mapper::newQuestionDTOToEntity).toList();
+        repo.saveQuestions(newQuestionsEntity);
     }
 
     public List<QuestionEntity> findByIds(List<String> ids) {
@@ -95,40 +94,5 @@ public class QuestionService {
             }
         }
         return new ArrayList<>(groupedResult.values());
-    }
-
-    private QuestionEntity mapQuestionToEntity(NewQuestionDTO question) {
-        QuestionEntity newQuestionEntity = new QuestionEntity();
-        newQuestionEntity.setSubject(question.getSubject());
-        newQuestionEntity.setChapterId(question.getChapterId());
-        newQuestionEntity.setLessonId(question.getLessonId());
-        newQuestionEntity.setExerciseType(question.getExerciseType());
-        newQuestionEntity.setDifficultyLevel(question.getDifficultyLevel());
-        newQuestionEntity.setLearningOutcomes(question.getLearningOutcomes());
-        newQuestionEntity.setQuestionType(question.getQuestionType());
-
-        // Question content
-        QuestionContentEntity questionContentEntity = new QuestionContentEntity();
-        questionContentEntity.setTemplate(question.getQuestion().getTemplate());
-        questionContentEntity.setVariables(new VariablesEntity(
-                question.getQuestion().getVariables().getMath(),
-                question.getQuestion().getVariables().getImage()
-        ));
-        newQuestionEntity.setQuestion(questionContentEntity);
-
-        // Options
-        List<OptionDataEntity> optionDataEntities = question.getOptions().stream()
-                .map(option -> {
-                    OptionDataEntity optionDataEntity = new OptionDataEntity();
-                    optionDataEntity.setTemplate(option.getTemplate());
-                    optionDataEntity.setVariables(new VariablesEntity(
-                            option.getVariables().getMath(),
-                            option.getVariables().getImage()
-                    ));
-                    return optionDataEntity;
-                }).toList();
-        newQuestionEntity.setOptions(optionDataEntities);
-
-        return newQuestionEntity;
     }
 }

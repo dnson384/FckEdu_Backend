@@ -13,15 +13,15 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonDraftDoc {
+public class LessonDraftDocument {
     @Builder.Default
     private String id = (new ObjectId()).toString();
 
     private String name;
 
     @Builder.Default
-    private List<MatrixItemDoc> matrix = new ArrayList<>();
+    private List<MatrixItemDocument> matrix = new ArrayList<>();
 
     @Builder.Default
-    private List<MatrixDetailItemDoc> matrixDetails = new ArrayList<>();
+    private List<MatrixDetailItemDocument> matrixDetails = new ArrayList<>();
 }

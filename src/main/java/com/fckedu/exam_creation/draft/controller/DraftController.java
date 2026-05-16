@@ -37,12 +37,12 @@ public class DraftController {
         return ResponseEntity.ok(draftUsecase.updateLessons(payload));
     }
 
-    @PutMapping("generate-matrix")
+    @PutMapping("/generate-matrix")
     public ResponseEntity<Boolean> generateMatrix(@RequestParam String draftId) {
         return ResponseEntity.ok(draftUsecase.generateMatrix(draftId));
     }
 
-    @PutMapping("generate-matrix-details")
+    @PutMapping("/generate-matrix-details")
     public ResponseEntity<Boolean> generateMatrixDetails(@RequestParam String draftId) {
         return ResponseEntity.ok(draftUsecase.generateMatrixDetails(draftId));
     }

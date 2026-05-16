@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MatrixDetailItemDoc {
-    private String exerciseType;
-    private String difficultyLevel;
-    private String learningOutcome;
+public class MatrixItemDocument {
     private String questionType;
+    private String difficultyLevel;
     private Integer selectedCount;
 }

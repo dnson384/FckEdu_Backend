@@ -12,7 +12,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VariablesDoc {
+public class VariablesDocument {
     @Builder.Default
     private Map<String, String> math = new HashMap<>();
 

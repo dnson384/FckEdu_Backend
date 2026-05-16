@@ -8,9 +8,9 @@ import com.fckedu.exam_creation.draft.domain.payload.UpdateLessonsPayload;
 import com.fckedu.exam_creation.draft.domain.payload.UpdateMatrixDetailsPayload;
 import com.fckedu.exam_creation.draft.domain.payload.UpdateMatrixPayload;
 import com.fckedu.exam_creation.draft.domain.repository.IDraftRepository;
-import com.fckedu.exam_creation.draft.infrastructure.document.ChapterDraftDoc;
+import com.fckedu.exam_creation.draft.infrastructure.document.ChapterDraftDocument;
 import com.fckedu.exam_creation.draft.infrastructure.document.DraftDocument;
-import com.fckedu.exam_creation.draft.infrastructure.document.LessonDraftDoc;
+import com.fckedu.exam_creation.draft.infrastructure.document.LessonDraftDocument;
 import com.fckedu.exam_creation.draft.infrastructure.mapper.DraftMapper;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -65,9 +65,9 @@ public class DraftRepositoryImpl implements IDraftRepository {
 
         // Thêm
         if (payload.getAdd() != null && !payload.getAdd().isEmpty()) {
-            List<ChapterDraftDoc> chaptersToAdd = payload.getAdd().stream()
+            List<ChapterDraftDocument> chaptersToAdd = payload.getAdd().stream()
                     .filter(chapter -> !chapterIds.contains(chapter.getId()))
-                    .map(chapter -> new ChapterDraftDoc(
+                    .map(chapter -> new ChapterDraftDocument(
                             chapter.getId(),
                             chapter.getName(),
                             new ArrayList<>()
@@ -107,13 +107,13 @@ public class DraftRepositoryImpl implements IDraftRepository {
     public boolean updateLessons(UpdateLessonsPayload payload) {
         DraftDocument draft = draftMapper.toDocument(getDraft(payload.getDraftId()));
 
-        ChapterDraftDoc curChapter = draft.getChapters().stream()
+        ChapterDraftDocument curChapter = draft.getChapters().stream()
                 .filter(c -> c.getId().equals(payload.getChapterId()))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Chương không tồn tại trong bản nháp"));
 
         List<String> curLessonIds = curChapter.getLessons().stream()
-                .map(LessonDraftDoc::getId)
+                .map(LessonDraftDocument::getId)
                 .toList();
 
         Update update = new Update();
@@ -121,9 +121,9 @@ public class DraftRepositoryImpl implements IDraftRepository {
 
         // Thêm
         if (payload.getAdd() != null && !payload.getAdd().isEmpty()) {
-            List<LessonDraftDoc> lessonsToAdd = payload.getAdd().stream()
+            List<LessonDraftDocument> lessonsToAdd = payload.getAdd().stream()
                     .filter(lesson -> !curLessonIds.contains(lesson.getId()))
-                    .map(lesson -> new LessonDraftDoc(
+                    .map(lesson -> new LessonDraftDocument(
                             lesson.getId(),
                             lesson.getName(),
                             new ArrayList<>(),

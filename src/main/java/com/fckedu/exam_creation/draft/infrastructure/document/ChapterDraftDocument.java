@@ -13,12 +13,12 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChapterDraftDoc {
+public class ChapterDraftDocument {
     @Builder.Default
     private String id = (new ObjectId()).toString();
 
     private String name;
 
     @Builder.Default
-    private List<LessonDraftDoc> lessons = new ArrayList<>();
+    private List<LessonDraftDocument> lessons = new ArrayList<>();
 }
