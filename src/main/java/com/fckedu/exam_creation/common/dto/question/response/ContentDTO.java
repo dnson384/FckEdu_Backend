@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionContentDTO {
+public class ContentDTO {
     private String template;
 
     @Builder.Default

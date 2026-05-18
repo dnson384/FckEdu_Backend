@@ -209,9 +209,9 @@ public class DraftRepositoryImpl implements IDraftRepository {
     }
 
     @Override
-    public boolean deleteDraft(String draftId) {
+    public void deleteDraft(String draftId) {
         Query query = new Query(Criteria.where("_id").is(new ObjectId(draftId)));
         DeleteResult result = mongoTemplate.remove(query, DraftDocument.class);
-        return result.getDeletedCount() > 0;
+        result.getDeletedCount();
     }
 }

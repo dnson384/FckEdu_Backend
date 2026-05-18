@@ -21,5 +21,5 @@ public interface IDraftRepository {
 
     boolean updateMatrixDetails(List<UpdateMatrixDetailsPayload> payloads);
 
-    boolean deleteDraft(String draftId);
+    void deleteDraft(String draftId);
 }

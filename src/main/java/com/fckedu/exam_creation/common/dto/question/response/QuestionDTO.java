@@ -1,4 +1,4 @@
-package com.fckedu.exam_creation.question.domain.entity;
+package com.fckedu.exam_creation.common.dto.question.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionEntity {
+public class QuestionDTO {
     private String id;
     private String subject;
     private String chapterId;
@@ -23,8 +23,8 @@ public class QuestionEntity {
     private String questionType;
 
     @Builder.Default
-    private QuestionContentEntity question = new QuestionContentEntity();
+    private ContentDTO question = new ContentDTO();
 
     @Builder.Default
-    private List<OptionDataEntity> options = new ArrayList<>();
+    private List<ContentDTO> options = new ArrayList<>();
 }

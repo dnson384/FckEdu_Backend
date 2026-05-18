@@ -1,4 +1,4 @@
-package com.fckedu.exam_creation.question.dto.response;
+package com.fckedu.exam_creation.common.dto.exam.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExamQuestionsDTO {
+public class ExamQuestionGeneratedDTO {
     String questionType;
     String difficultyLevel;
     List<String> questionIds;

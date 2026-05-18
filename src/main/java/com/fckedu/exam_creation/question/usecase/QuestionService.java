@@ -1,11 +1,12 @@
 package com.fckedu.exam_creation.question.usecase;
 
+import com.fckedu.exam_creation.common.dto.exam.response.ExamQuestionGeneratedDTO;
 import com.fckedu.exam_creation.common.dto.question.NewQuestionDTO;
+import com.fckedu.exam_creation.common.dto.question.response.QuestionDTO;
 import com.fckedu.exam_creation.question.domain.entity.QuestionEntity;
 import com.fckedu.exam_creation.question.domain.repository.IQuestionRepository;
 import com.fckedu.exam_creation.question.dto.mapper.QuestionDTOMapper;
 import com.fckedu.exam_creation.question.dto.request.ExamMatrixDetailDTO;
-import com.fckedu.exam_creation.question.dto.response.ExamQuestionsDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,11 +26,14 @@ public class QuestionService {
         repo.saveQuestions(newQuestionsEntity);
     }
 
-    public List<QuestionEntity> findByIds(List<String> ids) {
-        return repo.findByIds(ids);
+    public List<QuestionDTO> findByIds(List<String> ids) {
+        List<QuestionEntity> questions = repo.findByIds(ids);
+        return questions.stream()
+                .map(mapper::entityToCommonDTO)
+                .toList();
     }
 
-    public List<Object> generateExamQuestions(List<ExamMatrixDetailDTO> matrixDetails) {
+    public List<ExamQuestionGeneratedDTO> generateExamQuestions(List<ExamMatrixDetailDTO> matrixDetails) {
         // Tạo mảng lessonId không trùng id
         List<String> uniqueLessonIds = matrixDetails.stream()
                 .map(ExamMatrixDetailDTO::getLessonId)
@@ -46,7 +50,7 @@ public class QuestionService {
         // Tạo pool chứa các câu hỏi có thể dùng
         List<QuestionEntity> availablePool = new ArrayList<>(allQuestionsInLessons);
 
-        Map<String, ExamQuestionsDTO> groupedResult = new LinkedHashMap<>();
+        Map<String, ExamQuestionGeneratedDTO> groupedResult = new LinkedHashMap<>();
 
         for (ExamMatrixDetailDTO detail : matrixDetails) {
             if (detail.getLimit() <= 0) {
@@ -84,8 +88,8 @@ public class QuestionService {
                 String groupKey = detail.getQuestionType() + "_" + detail.getDifficultyLevel();
 
                 // Gom nhóm
-                ExamQuestionsDTO group = groupedResult.
-                        computeIfAbsent(groupKey, k -> new ExamQuestionsDTO(
+                ExamQuestionGeneratedDTO group = groupedResult.
+                        computeIfAbsent(groupKey, k -> new ExamQuestionGeneratedDTO(
                                 detail.getQuestionType(),
                                 detail.getDifficultyLevel(),
                                 new ArrayList<>()));
