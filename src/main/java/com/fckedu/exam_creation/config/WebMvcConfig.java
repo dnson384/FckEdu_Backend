@@ -6,14 +6,13 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class StaticResourceConfig implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${app.upload.dir}")
     private String uploadDir;
-    
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:uploads/");
-
+        registry.addResourceHandler("/static/uploads/**")
+                .addResourceLocations("file:" + uploadDir);
     }
 }
