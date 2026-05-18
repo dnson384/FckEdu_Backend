@@ -10,9 +10,9 @@ import com.fckedu.exam_creation.common.dto.draft.response.MatrixItemDTO;
 import com.fckedu.exam_creation.common.exception.NotFoundException;
 import com.fckedu.exam_creation.draft.usecase.util.dto.BankPool;
 import com.fckedu.exam_creation.draft.usecase.util.dto.Candidate;
+import com.fckedu.exam_creation.draft.usecase.util.dto.ComboKey;
 import com.fckedu.exam_creation.draft.usecase.util.dto.RemainderItem;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -21,12 +21,6 @@ import java.util.stream.IntStream;
 
 @Component
 public class DraftUtil {
-    private final ObjectMapper objectMapper;
-
-    public DraftUtil(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
     public boolean hasMatrix(
             List<ChapterDraftDTO> chapterData,
             Integer questionsCount
@@ -205,11 +199,11 @@ public class DraftUtil {
             for (ComboKey combo : uniqueCombos) {
                 for (String qType : allQuestionTypes) {
                     MatrixDetailItemDTO newItem = new MatrixDetailItemDTO();
-                    newItem.setExerciseType(combo.e());
-                    newItem.setDifficultyLevel(combo.d());
-                    newItem.setLearningOutcome(combo.o());
+                    newItem.setExerciseType(combo.getExerciseType());
+                    newItem.setDifficultyLevel(combo.getDifficultyLevel());
+                    newItem.setLearningOutcome(combo.getLearningOutcome());
                     newItem.setQuestionType(qType);
-                    newItem.setSelectedCount(0); // Khởi tạo an toàn là 0
+                    newItem.setSelectedCount(0);
                     matrixDetailItems.add(newItem);
                 }
             }
@@ -367,8 +361,4 @@ public class DraftUtil {
 
         return pools;
     }
-
-    private record ComboKey(String e, String d, String o) {
-    }
-
 }
