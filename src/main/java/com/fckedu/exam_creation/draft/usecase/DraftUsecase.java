@@ -176,6 +176,11 @@ public class DraftUsecase {
 
         for (ChapterDraftDTO chapter : draft.getChapters()) {
             for (LessonDraftDTO lesson : chapter.getLessons()) {
+                allDraftLessons.stream()
+                        .filter(l -> l.getId().equals(lesson.getId()))
+                        .findFirst()
+                        .ifPresent(l -> lesson.setMatrixDetails(l.getMatrixDetails()));
+
                 if (lesson.getMatrixDetails() != null && !lesson.getMatrixDetails().isEmpty()) {
                     payload.add(new UpdateMatrixDetailsPayload(
                             draft.getId(),

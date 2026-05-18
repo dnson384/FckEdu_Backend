@@ -13,6 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewQuestionDTO {
+    @Builder.Default
+    private String id = null;
+    
     private String subject;
     private String chapterId;
     private String lessonId;

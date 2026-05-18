@@ -12,10 +12,11 @@ import com.fckedu.exam_creation.draft.usecase.util.dto.BankPool;
 import com.fckedu.exam_creation.draft.usecase.util.dto.Candidate;
 import com.fckedu.exam_creation.draft.usecase.util.dto.RemainderItem;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Component
@@ -75,7 +76,7 @@ public class DraftUtil {
         levels.add("Vận dụng");
         levels.add("Vận dụng cao");
 
-        Map<String, Integer> neededByType = new HashMap<>();
+        Map<String, Integer> neededByType = new LinkedHashMap<>();
         createMatrixConfig(questionTypes, questionsCount, neededByType);
         Map<String, Integer> neededByLevel = createLevelConfig(questionsCount);
 
@@ -115,7 +116,7 @@ public class DraftUtil {
 
             String lessonName = "";
 
-            if (targetType != null && targetLevel != null) break;
+            if (targetType == null && targetLevel == null) break;
 
             int matchingPoolIndex = IntStream.range(0, availablePools.size())
                     .filter(i -> {
@@ -173,7 +174,7 @@ public class DraftUtil {
             List<CategoryResponseDTO> categories,
             List<LessonDraftDTO> allDraftLessons
     ) {
-        Map<String, LessonDataResponseDTO> cateMap = new HashMap<>();
+        Map<String, LessonDataResponseDTO> cateMap = new LinkedHashMap<>();
         for (CategoryResponseDTO cate : categories) {
             for (LessonDataResponseDTO lesson : cate.getLessons()) {
                 cateMap.put(lesson.getId(), lesson);
@@ -188,91 +189,74 @@ public class DraftUtil {
 
             List<MatrixDetailItemDTO> matrixDetailItems = new ArrayList<>();
 
-            List<String> allQuestionTypes = lessonDraft.getMatrix().stream()
+            Set<String> allQuestionTypes = lessonDraft.getMatrix().stream()
                     .map(MatrixItemDTO::getQuestionType)
-                    .distinct()
-                    .toList();
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            Set<String> uniqueCombos = new HashSet<>();
+            Set<ComboKey> uniqueCombos = new LinkedHashSet<>();
             for (BankStatResponseDTO bankStat : lessonData.getBankStats()) {
                 for (String difficultyLevel : bankStat.getDifficultyLevels()) {
                     for (String learningOutcome : bankStat.getLearningOutcomes()) {
-                        Map<String, String> combo = Map.of(
-                                "e", bankStat.getExerciseType(),
-                                "d", difficultyLevel,
-                                "o", learningOutcome
-                        );
-
-                        String key = objectMapper.writeValueAsString(combo);
-                        uniqueCombos.add(key);
+                        uniqueCombos.add(new ComboKey(bankStat.getExerciseType(), difficultyLevel, learningOutcome));
                     }
                 }
             }
 
-            for (String key : uniqueCombos) {
-                JsonNode combo = objectMapper.readTree(key);
-
-                String exerciseType = combo.get("e").asString();
-                String difficultyLevel = combo.get("d").asString();
-                String learningOutcome = combo.get("o").asString();
-
-                for (String questionType : allQuestionTypes) {
-                    MatrixDetailItemDTO detail = new MatrixDetailItemDTO();
-
-                    detail.setExerciseType(exerciseType);
-                    detail.setDifficultyLevel(difficultyLevel);
-                    detail.setLearningOutcome(learningOutcome);
-                    detail.setQuestionType(questionType);
-                    detail.setSelectedCount(0);
-
-                    matrixDetailItems.add(detail);
-                }
-
-                for (MatrixItemDTO matrixItem : lessonDraft.getMatrix()) {
-                    List<Candidate> candidates = lessonData.getBankStats().stream()
-                            .filter(stat ->
-                                    stat.getQuestionType().equals(matrixItem.getQuestionType()) &&
-                                            stat.getDifficultyLevels().contains(matrixItem.getDifficultyLevel()) &&
-                                            stat.getCount() > 0
-                            )
-                            .map(m -> new Candidate(m, m.getCount()))
-                            .toList();
-                    if (candidates.isEmpty()) continue;
-
-                    int needed = matrixItem.getSelectedCount();
-                    int index = 0;
-
-                    while (needed > 0) {
-                        Candidate candidate = candidates.get(index);
-
-                        if (candidate.getRemaining() > 0) {
-                            candidate.setRemaining(candidate.getRemaining() - 1);
-                            needed--;
-
-                            String randomOutcome = candidate.getBankStat().getLearningOutcomes()
-                                    .get((int) Math.floor(
-                                            Math.random() * candidate.getBankStat().getLearningOutcomes().size()
-                                    ));
-
-                            matrixDetailItems.stream()
-                                    .filter(d ->
-                                            d.getExerciseType().equals(candidate.getBankStat().getExerciseType()) &&
-                                                    d.getDifficultyLevel().equals(matrixItem.getDifficultyLevel()) &&
-                                                    d.getLearningOutcome().equals(randomOutcome) &&
-                                                    d.getQuestionType().equals(matrixItem.getQuestionType())
-                                    )
-                                    .findFirst()
-                                    .ifPresent(detailItem ->
-                                            detailItem.setSelectedCount(detailItem.getSelectedCount() + 1));
-
-                            index = (index + 1) % candidates.size();
-
-                            if (candidates.stream().allMatch(x -> x.getRemaining().equals(0))) break;
-                        }
-                    }
-                    lessonDraft.setMatrixDetails(matrixDetailItems);
+            for (ComboKey combo : uniqueCombos) {
+                for (String qType : allQuestionTypes) {
+                    MatrixDetailItemDTO newItem = new MatrixDetailItemDTO();
+                    newItem.setExerciseType(combo.e());
+                    newItem.setDifficultyLevel(combo.d());
+                    newItem.setLearningOutcome(combo.o());
+                    newItem.setQuestionType(qType);
+                    newItem.setSelectedCount(0); // Khởi tạo an toàn là 0
+                    matrixDetailItems.add(newItem);
                 }
             }
+
+            for (MatrixItemDTO matrixItem : lessonDraft.getMatrix()) {
+                List<Candidate> candidates = lessonData.getBankStats().stream()
+                        .filter(stat ->
+                                stat.getQuestionType().equals(matrixItem.getQuestionType()) &&
+                                        stat.getDifficultyLevels().contains(matrixItem.getDifficultyLevel()) &&
+                                        stat.getCount() != null && stat.getCount() > 0)
+                        .map(m -> new Candidate(m, m.getCount()))
+                        .toList();
+
+                if (candidates.isEmpty()) continue;
+
+                int needed = matrixItem.getSelectedCount() != null ? matrixItem.getSelectedCount() : 0;
+                int index = 0;
+
+                while (needed > 0) {
+                    Candidate candidate = candidates.get(index);
+
+                    if (candidate.getRemaining() > 0) {
+                        candidate.setRemaining(candidate.getRemaining() - 1);
+                        needed--;
+
+                        List<String> outcomes = candidate.getBankStat().getLearningOutcomes();
+                        String randomOutcome = outcomes.get(ThreadLocalRandom.current().nextInt(outcomes.size()));
+
+                        matrixDetailItems.stream()
+                                .filter(d -> d.getExerciseType().equals(candidate.getBankStat().getExerciseType()) &&
+                                        d.getDifficultyLevel().equals(matrixItem.getDifficultyLevel()) &&
+                                        d.getLearningOutcome().equals(randomOutcome) &&
+                                        d.getQuestionType().equals(matrixItem.getQuestionType()))
+                                .findFirst()
+                                .ifPresent(detailItem -> {
+                                    int currentCount = detailItem.getSelectedCount() == null ? 0 : detailItem.getSelectedCount();
+                                    detailItem.setSelectedCount(currentCount + 1);
+                                });
+                    }
+
+                    index = (index + 1) % candidates.size();
+
+                    boolean allZero = candidates.stream().allMatch(x -> x.getRemaining() == 0);
+                    if (allZero) break;
+                }
+            }
+            lessonDraft.setMatrixDetails(matrixDetailItems);
         }
     }
 
@@ -309,13 +293,13 @@ public class DraftUtil {
     }
 
     private Map<String, Integer> createLevelConfig(Integer totalQuestions) {
-        Map<String, Double> levelRatio = new HashMap<String, Double>();
+        Map<String, Double> levelRatio = new LinkedHashMap<>();
         levelRatio.put("Nhận biết", 0.4);
         levelRatio.put("Thông hiểu", 0.3);
         levelRatio.put("Vận dụng", 0.2);
         levelRatio.put("Vận dụng cao", 0.1);
 
-        Map<String, Integer> result = new HashMap<>();
+        Map<String, Integer> result = new LinkedHashMap<>();
         int assigned = 0;
 
         List<RemainderItem> remainders = new ArrayList<>();
@@ -383,4 +367,8 @@ public class DraftUtil {
 
         return pools;
     }
+
+    private record ComboKey(String e, String d, String o) {
+    }
+
 }

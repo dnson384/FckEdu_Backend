@@ -174,8 +174,9 @@ public class DraftRepositoryImpl implements IDraftRepository {
             Update update = new Update();
 
             update.set("chapters.$[chapter].lessons.$[lesson].matrix", payload.getMatrix());
-            update.filterArray(Criteria.where("chapter.id").is(new ObjectId(payload.getChapterId())));
-            update.filterArray(Criteria.where("lesson.id").is(new ObjectId(payload.getLessonId())));
+            update.filterArray(Criteria.where("chapter._id").is(new ObjectId(payload.getChapterId())));
+            update.filterArray(Criteria.where("lesson._id").is(new ObjectId(payload.getLessonId())));
+
 
             bulkOps.updateOne(query, update);
         }
@@ -197,8 +198,8 @@ public class DraftRepositoryImpl implements IDraftRepository {
             Update update = new Update();
 
             update.set("chapters.$[chapter].lessons.$[lesson].matrixDetails", payload.getMatrixDetails());
-            update.filterArray(Criteria.where("chapter.id").is(new ObjectId(payload.getChapterId())));
-            update.filterArray(Criteria.where("lesson.id").is(new ObjectId(payload.getLessonId())));
+            update.filterArray(Criteria.where("chapter._id").is(new ObjectId(payload.getChapterId())));
+            update.filterArray(Criteria.where("lesson._id").is(new ObjectId(payload.getLessonId())));
 
             bulkOps.updateOne(query, update);
         }
