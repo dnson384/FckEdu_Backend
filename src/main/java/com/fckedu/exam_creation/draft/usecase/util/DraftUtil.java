@@ -62,9 +62,8 @@ public class DraftUtil {
             Map<String, List<LessonDataResponseDTO>> lessonsData,
             List<ChapterDraftDTO> newDraftChapters,
             List<String> questionTypes,
-            Integer questionsCount
-    ) {
-        List<String> levels = new ArrayList<String>();
+            Integer questionsCount) {
+        List<String> levels = new ArrayList<>();
         levels.add("Nhận biết");
         levels.add("Thông hiểu");
         levels.add("Vận dụng");
@@ -76,91 +75,148 @@ public class DraftUtil {
 
         List<BankPool> availablePools = flatLessons(lessonsData);
 
+        Set<String> allPossibleTypes = new LinkedHashSet<>(questionTypes);
+        availablePools.stream().map(BankPool::getType).forEach(allPossibleTypes::add);
+
         for (ChapterDraftDTO chapter : newDraftChapters) {
             for (LessonDraftDTO lesson : chapter.getLessons()) {
                 lesson.setMatrix(new ArrayList<>());
 
-                for (String type : questionTypes) {
-                    for (String level : levels) {
-                        lesson.getMatrix().add(
-                                new MatrixItemDTO(type, level, 0)
-                        );
+                for (String type : allPossibleTypes) {
+                    if (!Objects.equals(type, "Tự luận")) {
+                        for (String level : levels) {
+                            lesson.getMatrix().add(new MatrixItemDTO(type, level, 0));
+                        }
                     }
+
                 }
             }
         }
 
+        List<String> distinctLessonIds = availablePools.stream()
+                .map(BankPool::getLessonId)
+                .distinct()
+                .toList();
+
+        int lessonIndex = 0;
         int totalAllocated = 0;
         int maxAttempts = questionsCount * 10;
         int attempts = 0;
+        // Đếm số lần duyệt qua các bài liên tiếp mà không lấy được câu nào
+        int consecutiveFailures = 0;
 
         while (totalAllocated < questionsCount && attempts < maxAttempts) {
             attempts++;
 
-            String targetType = neededByType.entrySet().stream()
-                    .filter(entry -> entry.getValue() > 0)
-                    .map(Map.Entry::getKey)
-                    .findFirst()
-                    .orElse(null);
-            String targetLevel = neededByLevel.entrySet().stream()
-                    .filter(entry -> entry.getValue() > 0)
-                    .map(Map.Entry::getKey)
-                    .findFirst()
-                    .orElse(null);
+            if (distinctLessonIds.isEmpty()) break;
 
-            String lessonName = "";
+            // Xoay vòng qua từng bài học
+            String currentLessonId = distinctLessonIds.get(lessonIndex % distinctLessonIds.size());
+            lessonIndex++;
 
-            if (targetType == null && targetLevel == null) break;
+            // Lấy các pool còn câu hỏi thuộc bài học hiện tại
+            List<BankPool> currentLessonPools = availablePools.stream()
+                    .filter(p ->
+                            p.getLessonId().equals(currentLessonId) &&
+                                    p.getAvailable() > 0
+                    )
+                    .toList();
 
-            int matchingPoolIndex = IntStream.range(0, availablePools.size())
-                    .filter(i -> {
-                        BankPool pool = availablePools.get(i);
+            BankPool bestPool = null;
+            int maxScore = 0;
 
-                        return pool.getAvailable() > 0
-                                && pool.getType().equals(targetType)
-                                && pool.getLevel().equals(targetLevel);
-                    })
-                    .findFirst()
-                    .orElse(-1);
+            // Chấm điểm để chọn ra câu hỏi tối ưu nhất dựa trên thực tế kho câu hỏi
+            for (BankPool pool : currentLessonPools) {
+                int score = 0;
+                boolean typeNeeded = neededByType.getOrDefault(pool.getType(), 0) > 0;
+                boolean levelNeeded = neededByLevel.getOrDefault(pool.getLevel(), 0) > 0;
 
-            if (matchingPoolIndex != -1) {
-                BankPool pool = availablePools.get(matchingPoolIndex);
-                pool.setAvailable(pool.getAvailable() - 1);
+                if (typeNeeded && levelNeeded) {
+                    score = 3; // Khớp cả 2 tiêu chí tiêu chuẩn
+                } else if (typeNeeded) {
+                    score = 2; // Ưu tiên khớp loại câu hỏi trước
+                } else if (levelNeeded) {
+                    score = 1; // Hoặc khớp mức độ nhận thức
+                }
+
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestPool = pool;
+                }
+            }
+
+            if (bestPool == null) {
+                consecutiveFailures++;
+
+                /*
+                Nếu đã quét qua tất cả các bài mà không tìm được câu nào khớp với cấu hình còn thiếu
+                => kho thực tế bị lệch so với yêu cầu ban đầu.
+                => hạ chuẩn
+                */
+                if (consecutiveFailures >= distinctLessonIds.size()) {
+                    // Tìm 1 câu bất kỳ còn sót lại trên toàn bộ hệ thống,
+                    // ưu tiên câu có ích nhất có thể
+                    bestPool = availablePools.stream()
+                            .filter(p -> p.getAvailable() > 0)
+                            .max((p1, p2) -> {
+                                int score1 = (neededByType.getOrDefault(p1.getType(), 0) > 0 ? 2 : 0)
+                                        + (neededByLevel.getOrDefault(p1.getLevel(), 0) > 0 ? 1 : 0);
+                                int score2 = (neededByType.getOrDefault(p2.getType(), 0) > 0 ? 2 : 0)
+                                        + (neededByLevel.getOrDefault(p2.getLevel(), 0) > 0 ? 1 : 0);
+                                return Integer.compare(score1, score2);
+                            })
+                            .orElse(null);
+
+                    if (bestPool == null) {
+                        break;
+                    }
+                    consecutiveFailures = 0;
+                } else {
+                    continue;
+                }
+            } else {
+                consecutiveFailures = 0;
+            }
+
+            String targetType = bestPool.getType();
+            String targetLevel = bestPool.getLevel();
+
+            bestPool.setAvailable(bestPool.getAvailable() - 1);
+
+            // Giảm nhu cầu cấu hình (chỉ giảm nếu cấu hình đó vẫn còn cần > 0)
+            if (neededByType.getOrDefault(targetType, 0) > 0) {
                 neededByType.put(targetType, neededByType.get(targetType) - 1);
+            }
+            if (neededByLevel.getOrDefault(targetLevel, 0) > 0) {
                 neededByLevel.put(targetLevel, neededByLevel.get(targetLevel) - 1);
-                totalAllocated += 1;
+            }
+            totalAllocated += 1;
 
-                ChapterDraftDTO chapter = newDraftChapters.stream()
-                        .filter(c -> c.getId().equals(pool.getChapterId()))
-                        .findFirst()
-                        .orElse(null);
+            BankPool finalBestPool = bestPool;
+            ChapterDraftDTO chapter = newDraftChapters.stream()
+                    .filter(c -> c.getId().equals(finalBestPool.getChapterId()))
+                    .findFirst()
+                    .orElse(null);
 
-                assert chapter != null;
+            if (chapter != null) {
                 LessonDraftDTO lesson = chapter.getLessons().stream()
-                        .filter(l -> l.getId().equals(pool.getLessonId()))
+                        .filter(l -> l.getId().equals(finalBestPool.getLessonId()))
                         .findFirst()
                         .orElse(null);
 
                 if (lesson != null) {
-                    lessonName = lesson.getName();
                     lesson.getMatrix().stream()
                             .filter(m -> m.getQuestionType().equals(targetType) &&
-                                    m.getDifficultyLevel().equals(targetLevel)
-                            )
-                            .findFirst().ifPresent(existingMatrixItem -> existingMatrixItem.setSelectedCount(existingMatrixItem.getSelectedCount() + 1));
-
+                                    m.getDifficultyLevel().equals(targetLevel))
+                            .findFirst()
+                            .ifPresent(existingItem ->
+                                    existingItem.setSelectedCount(existingItem.getSelectedCount() + 1));
                 }
-            } else {
-                System.err.printf("Kho thiếu câu %s - %s - %s. Có thể do không đủ lượng câu hỏi",
-                        lessonName, targetType, targetLevel);
-
-                neededByLevel.put(targetLevel, neededByLevel.get(targetLevel) - 1);
-                neededByType.put(targetType, neededByType.get(targetType) - 1);
             }
         }
 
         if (totalAllocated < questionsCount) {
-            throw new NotFoundException("");
+            throw new NotFoundException("Không thể tạo đủ ma trận câu hỏi do kho không đáp ứng.");
         }
     }
 
