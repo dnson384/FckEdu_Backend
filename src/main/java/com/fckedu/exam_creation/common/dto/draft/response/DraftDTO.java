@@ -10,7 +10,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DraftDTO {
-    String id;
+    private String id;
+    private String examName;
     Integer questionsCount;
     List<String> questionTypes;
     List<ChapterDraftDTO> chapters;

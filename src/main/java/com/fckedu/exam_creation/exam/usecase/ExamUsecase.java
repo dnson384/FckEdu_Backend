@@ -71,6 +71,7 @@ public class ExamUsecase {
 
         ExamEntity payload = new ExamEntity(
                 null,
+                draft.getExamName(),
                 chaptersExam,
                 questions.stream()
                         .map(q -> new QuestionExamEntity(
@@ -94,58 +95,6 @@ public class ExamUsecase {
                 .toList();
 
         List<QuestionDTO> questions = questionService.findByIds(questionIds);
-
-//        List<ExamQuestionDTO> examQuestionDTOS = new ArrayList<>();
-//        for (ChapterExamEntity chapter : exam.getChapters()) {
-//            List<QuestionDTO> matchedQuestionsChapter = questions.stream()
-//                    .filter(question ->
-//                            question.getChapterId().equals(chapter.getId()))
-//                    .toList();
-//
-//            List<QuestionDTO> matchedAll = new ArrayList<>();
-//            for (String lessonId : chapter.getLessonIds()) {
-//                List<QuestionDTO> matched = matchedQuestionsChapter.stream()
-//                        .filter(q -> q.getLessonId().equals(lessonId))
-//                        .toList();
-//                matchedAll.addAll(matched);
-//            }
-//
-//            List<QuestionDetailDTO> detailDTOS = matchedAll.stream()
-//                    .map(question -> new QuestionDetailDTO(
-//                            question.getId(),
-//                            question.getQuestion(),
-//                            question.getOptions()))
-//                    .toList();
-//
-//            // Update ExamQuestionDTO
-//            for (QuestionDTO question : matchedAll) {
-//                int index = IntStream.range(0, examQuestionDTOS.size())
-//                        .filter(i ->
-//                                examQuestionDTOS.get(i).getQuestionType().equals(question.getQuestionType()) &&
-//                                        examQuestionDTOS.get(i).getDifficultyLevel().equals(question.getDifficultyLevel()))
-//                        .findFirst()
-//                        .orElse(-1);
-//
-//                if (index == -1) {
-//                    examQuestionDTOS.add(new ExamQuestionDTO(
-//                            question.getQuestionType(),
-//                            question.getDifficultyLevel(),
-//                            new ArrayList<>()
-//                    ));
-//                    examQuestionDTOS.get(examQuestionDTOS.size() - 1).getQuestions().add(
-//                            new QuestionDetailDTO(
-//                                    question.getId(), question.getQuestion(), question.getOptions()
-//                            )
-//                    );
-//                } else {
-//                    examQuestionDTOS.get(index).getQuestions().add(
-//                            new QuestionDetailDTO(
-//                                    question.getId(), question.getQuestion(), question.getOptions()
-//                            )
-//                    );
-//                }
-//            }
-//        }
 
         return mapper.convertToExamResponse(exam, questions);
     }

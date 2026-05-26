@@ -40,6 +40,7 @@ public class DraftUsecase {
 
     public String createDraft(CreateDraftDTO payload) {
         DraftEntity payloadDomain = new DraftEntity();
+        payloadDomain.setExamName(payload.getExamName());
         payloadDomain.setQuestionsCount(payload.getQuestionsCount());
         payloadDomain.setQuestionTypes(payload.getQuestionTypes());
 

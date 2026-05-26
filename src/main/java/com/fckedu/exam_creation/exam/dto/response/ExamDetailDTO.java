@@ -11,5 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class ExamDetailDTO {
     private String id;
+    private String name;
     private List<ExamQuestionDTO> groups;
 }

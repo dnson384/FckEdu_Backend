@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateDraftDTO {
-    Integer questionsCount;
-    List<String> questionTypes;
+    private Integer questionsCount;
+    private String examName;
+    private List<String> questionTypes;
 }

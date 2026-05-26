@@ -10,8 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DraftEntity {
-    String id;
-    Integer questionsCount;
-    List<String> questionTypes;
-    List<ChapterDraftEntity> chapters;
+    private String id;
+    private String examName;
+    private Integer questionsCount;
+    private List<String> questionTypes;
+    private List<ChapterDraftEntity> chapters;
 }

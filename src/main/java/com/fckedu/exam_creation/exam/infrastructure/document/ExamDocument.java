@@ -16,6 +16,7 @@ public class ExamDocument {
     @Id
     private String id;
 
+    private String name;
     private List<ChapterExamDocument> chapters;
     private List<QuestionExamDocument> questions;
 }

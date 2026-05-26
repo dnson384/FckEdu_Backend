@@ -19,6 +19,7 @@ public class DraftDocument {
     @Id
     private String id;
 
+    private String examName;
     private Integer questionsCount;
 
     @Builder.Default
