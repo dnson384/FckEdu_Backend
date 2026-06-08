@@ -3,9 +3,7 @@ package com.fckedu.exam_creation.exam.dto.mapper;
 import com.fckedu.exam_creation.common.dto.question.response.QuestionDTO;
 import com.fckedu.exam_creation.exam.domain.entity.ChapterExamEntity;
 import com.fckedu.exam_creation.exam.domain.entity.ExamEntity;
-import com.fckedu.exam_creation.exam.dto.response.ExamDetailDTO;
-import com.fckedu.exam_creation.exam.dto.response.ExamQuestionDTO;
-import com.fckedu.exam_creation.exam.dto.response.QuestionDetailDTO;
+import com.fckedu.exam_creation.exam.dto.response.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -14,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class ExamDTOMapper {
-    public ExamDetailDTO convertToExamResponse(ExamEntity exam, List<QuestionDTO> questions) {
+    public ExamDetailDTO convertToExamDetailResponse(ExamEntity exam, List<QuestionDTO> questions) {
         ExamDetailDTO dto = new ExamDetailDTO();
         dto.setId(exam.getId());
         dto.setName(exam.getName());
@@ -54,5 +52,23 @@ public class ExamDTOMapper {
         dto.setGroups(examQuestionDTOS);
 
         return dto;
+    }
+
+    public ExamDTO convertToExamResponse(ExamEntity entity) {
+        List<ExamChapterDTO> chapterDTOS = entity.getChapters().stream()
+                .map(chapter -> new ExamChapterDTO(
+                        chapter.getId(),
+                        chapter.getLessonIds()
+                ))
+                .toList();
+
+        Integer questionCount = entity.getQuestions().stream()
+                .mapToInt(q -> q.getQuestionIds().size())
+                .sum();
+
+        return new ExamDTO(entity.getId(),
+                entity.getName(),
+                chapterDTOS,
+                questionCount);
     }
 }

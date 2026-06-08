@@ -1,9 +1,12 @@
 package com.fckedu.exam_creation.exam.controller;
 
 import com.fckedu.exam_creation.exam.dto.request.GenerateExamPayload;
+import com.fckedu.exam_creation.exam.dto.response.ExamDTO;
 import com.fckedu.exam_creation.exam.dto.response.ExamDetailDTO;
 import com.fckedu.exam_creation.exam.usecase.ExamUsecase;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/exam")
@@ -22,5 +25,10 @@ public class ExamController {
     @GetMapping("/{examId}")
     public ExamDetailDTO getExamById(@PathVariable String examId) {
         return examUsecase.getExamById(examId);
+    }
+
+    @GetMapping("/all")
+    public List<ExamDTO> getAllExams() {
+        return examUsecase.getAllExams();
     }
 }

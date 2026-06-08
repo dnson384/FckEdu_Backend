@@ -1,5 +1,7 @@
 package com.fckedu.exam_creation.exam.usecase;
 
+import com.fckedu.exam_creation.category.usecase.CategoryService;
+import com.fckedu.exam_creation.common.dto.category.response.CategoryResponseDTO;
 import com.fckedu.exam_creation.common.dto.draft.response.ChapterDraftDTO;
 import com.fckedu.exam_creation.common.dto.draft.response.DraftDTO;
 import com.fckedu.exam_creation.common.dto.draft.response.LessonDraftDTO;
@@ -12,6 +14,7 @@ import com.fckedu.exam_creation.exam.domain.entity.ExamEntity;
 import com.fckedu.exam_creation.exam.domain.entity.QuestionExamEntity;
 import com.fckedu.exam_creation.exam.domain.repository.IExamRepository;
 import com.fckedu.exam_creation.exam.dto.mapper.ExamDTOMapper;
+import com.fckedu.exam_creation.exam.dto.response.ExamDTO;
 import com.fckedu.exam_creation.exam.dto.response.ExamDetailDTO;
 import com.fckedu.exam_creation.question.dto.request.ExamMatrixDetailDTO;
 import com.fckedu.exam_creation.question.usecase.QuestionService;
@@ -24,12 +27,14 @@ import java.util.List;
 @Service
 public class ExamUsecase {
     private final IExamRepository repo;
+    private final CategoryService categoryService;
     private final QuestionService questionService;
     private final DraftService draftService;
     private final ExamDTOMapper mapper;
 
-    public ExamUsecase(IExamRepository repo, QuestionService questionService, DraftService draftService, ExamDTOMapper mapper) {
+    public ExamUsecase(IExamRepository repo, CategoryService categoryService, QuestionService questionService, DraftService draftService, ExamDTOMapper mapper) {
         this.repo = repo;
+        this.categoryService = categoryService;
         this.questionService = questionService;
         this.draftService = draftService;
         this.mapper = mapper;
@@ -96,6 +101,21 @@ public class ExamUsecase {
 
         List<QuestionDTO> questions = questionService.findByIds(questionIds);
 
-        return mapper.convertToExamResponse(exam, questions);
+        return mapper.convertToExamDetailResponse(exam, questions);
+    }
+
+    public List<ExamDTO> getAllExams() {
+        List<ExamEntity> examEntities = repo.getAllExams();
+
+        List<String> chapterIds = examEntities.stream()
+                .flatMap(examEntity -> examEntity.getChapters().stream()
+                        .map(ChapterExamEntity::getId))
+                .toList();
+
+        List<CategoryResponseDTO> categories = categoryService.getByIds(chapterIds);
+
+        return examEntities.stream()
+                .map(entity -> mapper.convertToExamResponse(entity))
+                .toList();
     }
 }

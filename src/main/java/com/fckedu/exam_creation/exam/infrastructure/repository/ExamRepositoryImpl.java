@@ -8,6 +8,8 @@ import com.fckedu.exam_creation.exam.infrastructure.mapper.ExamMapper;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class ExamRepositoryImpl implements IExamRepository {
     private final MongoTemplate mongoTemplate;
@@ -32,5 +34,16 @@ public class ExamRepositoryImpl implements IExamRepository {
             throw new NotFoundException("Không tồn tại bài kiểm tra");
         }
         return mapper.docToEntity(exam);
+    }
+
+    @Override
+    public List<ExamEntity> getAllExams() {
+        List<ExamDocument> exams = mongoTemplate.findAll(ExamDocument.class);
+
+        if (exams.isEmpty()) {
+            throw new NotFoundException("Danh sách bài kiểm tra trống");
+        }
+
+        return exams.stream().map(mapper::docToEntity).toList();
     }
 }
