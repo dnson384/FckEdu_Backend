@@ -27,10 +27,8 @@ public class QuestionDocument {
     @Id
     private String id;
 
-    private String subject;
-
     @Field(targetType = FieldType.OBJECT_ID)
-    private String chapterId;
+    private String categoryId;
 
     @Field(targetType = FieldType.OBJECT_ID)
     private String lessonId;

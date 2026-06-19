@@ -15,9 +15,8 @@ import java.util.List;
 public class NewQuestionDTO {
     @Builder.Default
     private String id = null;
-    
-    private String subject;
-    private String chapterId;
+
+    private String categoryId;
     private String lessonId;
     private String exerciseType;
     private String difficultyLevel;

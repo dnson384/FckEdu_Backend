@@ -76,6 +76,8 @@ public class ExamUsecase {
 
         ExamEntity payload = new ExamEntity(
                 null,
+                null,
+                draftId,
                 draft.getExamName(),
                 chaptersExam,
                 questions.stream()
@@ -115,7 +117,7 @@ public class ExamUsecase {
         List<CategoryResponseDTO> categories = categoryService.getByIds(chapterIds);
 
         return examEntities.stream()
-                .map(entity -> mapper.convertToExamResponse(entity))
+                .map(mapper::convertToExamResponse)
                 .toList();
     }
 }

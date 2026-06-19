@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class DraftEntity {
     private String id;
+    private String userId;
     private String examName;
     private Integer questionsCount;
     private List<String> questionTypes;

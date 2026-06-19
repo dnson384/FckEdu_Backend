@@ -20,7 +20,7 @@ public class ExamDTOMapper {
         List<QuestionDTO> validQuestions = new ArrayList<>();
         for (ChapterExamEntity chapter : exam.getChapters()) {
             List<QuestionDTO> matchedQuestions = questions.stream()
-                    .filter(q -> q.getChapterId().equals(chapter.getId()) &&
+                    .filter(q -> q.getCategoryId().equals(chapter.getId()) &&
                             chapter.getLessonIds().contains(q.getLessonId()))
                     .toList();
             validQuestions.addAll(matchedQuestions);

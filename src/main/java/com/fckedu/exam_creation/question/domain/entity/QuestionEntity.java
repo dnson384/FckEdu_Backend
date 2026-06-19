@@ -14,8 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionEntity {
     private String id;
-    private String subject;
-    private String chapterId;
+    private String categoryId;
     private String lessonId;
     private String exerciseType;
     private String difficultyLevel;

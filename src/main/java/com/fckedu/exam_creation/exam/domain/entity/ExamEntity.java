@@ -11,6 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ExamEntity {
     private String id;
+    private String userId;
+    private String draftId;
     private String name;
     private List<ChapterExamEntity> chapters;
     private List<QuestionExamEntity> questions;
