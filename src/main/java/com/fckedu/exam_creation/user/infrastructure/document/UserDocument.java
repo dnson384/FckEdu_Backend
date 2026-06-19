@@ -1,4 +1,4 @@
-package com.fckedu.exam_creation.exam.infrastructure.document;
+package com.fckedu.exam_creation.user.infrastructure.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,29 +7,24 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "Exams")
-public class ExamDocument {
+@Document(collection = "Users")
+public class UserDocument {
     @Id
     private String id;
 
-    @Field(targetType = FieldType.OBJECT_ID)
-    private String userId;
-
-    @Field(targetType = FieldType.OBJECT_ID)
-    private String draftId;
-
-    private String name;
-    private List<ChapterExamDocument> chapters;
-    private List<QuestionExamDocument> questions;
+    private String email;
+    private String hashedPassword;
+    private String username;
+    private String role;
+    private String loginMethod;
+    private String avatarUrl;
+    private Boolean isActive;
 
     @CreatedDate
     private LocalDateTime created_At;

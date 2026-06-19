@@ -74,8 +74,7 @@ public class ImporterService {
 
     private NewQuestionDTO mapQuestionToDTO(NewQuestionImporterDTO question, String subject, SavedCategoryResponse categoryResponse) {
         NewQuestionDTO newQuestionDTO = new NewQuestionDTO();
-        newQuestionDTO.setSubject(subject);
-        newQuestionDTO.setChapterId(categoryResponse.getChapterId());
+        newQuestionDTO.setCategoryId(categoryResponse.getChapterId());
         newQuestionDTO.setLessonId(categoryResponse.getLessonId());
         newQuestionDTO.setExerciseType(question.getExerciseType());
         newQuestionDTO.setDifficultyLevel(question.getDifficultyLevel());
