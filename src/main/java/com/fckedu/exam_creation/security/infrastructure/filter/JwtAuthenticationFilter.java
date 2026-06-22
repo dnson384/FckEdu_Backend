@@ -6,7 +6,6 @@ import com.fckedu.exam_creation.security.infrastructure.service.CustomUserDetail
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException, java.io.IOException {
         try {
             // 1. Lấy Access Token từ Cookie thay vì Header Bearer
-            String jwt = getJwtFromCookie(request);
+            String jwt = getJwtFromRequest(request);
 
             // 2. Validate token
             if (jwt != null && tokenProvider.validateAccessToken(jwt)) {
@@ -65,13 +64,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // Hàm bổ trợ quét Cookie tìm "access_token"
-    private @Nullable String getJwtFromCookie(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private @Nullable String getJwtFromRequest(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
         }
         return null;
     }

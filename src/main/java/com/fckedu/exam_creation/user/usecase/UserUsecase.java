@@ -95,4 +95,10 @@ public class UserUsecase {
                 userDto, accessToken, refreshToken
         );
     }
+
+    public UserResponseDTO getMe(String accessToken) {
+        String userId = securityService.getPayloadFromAccessToken(accessToken).getId();
+        UserEntity user = repo.findById(userId);
+        return mapperDTO.toUserResponseDTO(user);
+    }
 }
