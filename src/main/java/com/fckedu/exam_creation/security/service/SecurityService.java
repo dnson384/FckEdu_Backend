@@ -1,5 +1,6 @@
 package com.fckedu.exam_creation.security.service;
 
+import com.fckedu.exam_creation.common.dto.refreshToken.request.NewRTRequestDTO;
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
 import com.fckedu.exam_creation.common.dto.token.RTPayload;
 import com.fckedu.exam_creation.security.infrastructure.provider.JwtTokenProvider;
@@ -41,6 +42,10 @@ public class SecurityService {
 
     public RTPayload getPayloadFromRefreshToken(String token) {
         return provider.getPayloadFromRefreshToken(token);
+    }
+
+    public NewRTRequestDTO parseNewRefreshToken(String token) {
+        return provider.parseNewRefreshToken(token);
     }
 
     // Validate Token

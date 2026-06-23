@@ -1,5 +1,6 @@
 package com.fckedu.exam_creation.security.infrastructure.provider;
 
+import com.fckedu.exam_creation.common.dto.refreshToken.request.NewRTRequestDTO;
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
 import com.fckedu.exam_creation.common.dto.token.RTPayload;
 import io.jsonwebtoken.*;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Slf4j
@@ -37,7 +39,7 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + accessExpirationMs);
 
         return Jwts.builder()
-                .subject(payload.getId())
+                .subject(payload.getUserId())
                 .claim("email", payload.getEmail())
                 .claim("role", payload.getRole())
                 .issuedAt(now).expiration(expiryDate)
@@ -66,7 +68,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .id(payload.getJti())
-                .subject(payload.getId())
+                .subject(payload.getUserId())
                 .claim("email", payload.getEmail())
                 .claim("role", payload.getRole())
                 .issuedAt(now).expiration(expiryDate)
@@ -83,11 +85,28 @@ public class JwtTokenProvider {
 
         RTPayload payload = new RTPayload();
         payload.setJti(claims.getId());
-        payload.setId(claims.getSubject());
+        payload.setUserId(claims.getSubject());
         payload.setEmail(claims.get("email", String.class));
         payload.setRole(claims.get("role", String.class));
 
         return payload;
+    }
+
+    public NewRTRequestDTO parseNewRefreshToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(refreshSecret)
+                .build()
+                .parseSignedClaims(token).getPayload();
+        return new NewRTRequestDTO(
+                claims.getId(),
+                claims.getSubject(),
+                claims.getExpiration().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime(),
+                claims.getIssuedAt().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
+        );
     }
 
     public boolean validateAccessToken(String token) {
@@ -110,8 +129,10 @@ public class JwtTokenProvider {
             log.error("{} không được hỗ trợ!", tokenType);
         } catch (IllegalArgumentException ex) {
             log.error("Chuỗi Claims của {} đang để trống!", tokenType);
-        } catch (io.jsonwebtoken.security.SignatureException | io.jsonwebtoken.security.WeakKeyException ex) {
-            log.error("Chữ ký {} không đúng hoặc Secret Key quá yếu!", tokenType);
+        } catch (io.jsonwebtoken.security.SignatureException ex) {
+            log.error("Chữ ký {} không đúng!", tokenType);
+        } catch (io.jsonwebtoken.security.WeakKeyException ex) {
+            log.error("Chữ ký {} Secret Key quá yếu!", tokenType);
         }
         return false;
     }

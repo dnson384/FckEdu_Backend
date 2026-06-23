@@ -44,8 +44,11 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                // User
                                 "/user/login",
                                 "/user/register",
+                                // RT
+                                "/refresh-token/generate-access-token",
                                 // Swagger
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",

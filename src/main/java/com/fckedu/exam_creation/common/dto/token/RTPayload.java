@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RTPayload {
     private String jti;
-    private String id;
+    private String userId;
     private String email;
     private String role;
 }

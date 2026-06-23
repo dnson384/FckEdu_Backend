@@ -27,4 +27,11 @@ public class GlobalExceptionHandler {
                         "message", ex.getMessage()
                 ));
     }
+
+    @ExceptionHandler(InternalError.class)
+    public ResponseEntity<?> handleInternalError(InternalServerException ex) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", ex.getMessage()));
+    }
 }

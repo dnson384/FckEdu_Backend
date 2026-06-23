@@ -16,18 +16,43 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.util.List;
 
 @Slf4j
 @NullMarked
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            // User
+            "/user/login",
+            "/user/register",
+            // RT
+            "/refresh-token/generate-access-token",
+            // Swagger
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml"
+    );
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String currentPath = request.getServletPath();
+
+        return EXCLUDED_PATHS.stream()
+                .anyMatch(path -> pathMatcher.match(path, currentPath));
     }
 
     @Override

@@ -42,7 +42,7 @@ public class UserController {
 
         Cookie refreshToken = new Cookie(
                 "refeshToken",
-                dto.getAccessToken()
+                dto.getRefreshToken()
         );
         refreshToken.setHttpOnly(true);
         refreshToken.setMaxAge(15 * 60);
