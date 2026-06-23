@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: Backend
+
+  mongodb:
+    uri: "mongodb+srv://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@cluster0.96svcb8.mongodb.net/?appName=Cluster0"
+    database: test2
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+
+app:
+  upload:
+    dir: "./static/uploads/"
+  jwt:
+    access-secret: ${JWT_ACCESS_SECRET}
+    refresh-secret: ${JWT_REFRESH_SECRET}
+    access-expiration-ms: 900000
+    refresh-expiration-ms: 604800000

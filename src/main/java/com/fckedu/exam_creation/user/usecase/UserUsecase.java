@@ -1,9 +1,12 @@
 package com.fckedu.exam_creation.user.usecase;
 
+import com.fckedu.exam_creation.common.dto.refreshToken.request.NewRTRequestDTO;
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
 import com.fckedu.exam_creation.common.dto.token.RTPayload;
+import com.fckedu.exam_creation.common.exception.InternalServerException;
 import com.fckedu.exam_creation.common.exception.NotFoundException;
 import com.fckedu.exam_creation.common.exception.UnAuthorizedException;
+import com.fckedu.exam_creation.refreshToken.usecase.RefreshTokenService;
 import com.fckedu.exam_creation.security.service.SecurityService;
 import com.fckedu.exam_creation.user.domain.entity.UserEntity;
 import com.fckedu.exam_creation.user.dto.mapper.UserDTOMapper;
@@ -21,11 +24,13 @@ public class UserUsecase {
     private final UserRepositoryImpl repo;
     private final UserDTOMapper mapperDTO;
     private final SecurityService securityService;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserUsecase(UserRepositoryImpl repo, UserDTOMapper mapperDTO, SecurityService securityService) {
+    public UserUsecase(UserRepositoryImpl repo, UserDTOMapper mapperDTO, SecurityService securityService, RefreshTokenService refreshTokenService) {
         this.repo = repo;
         this.mapperDTO = mapperDTO;
         this.securityService = securityService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AuthorizedResponseDTO register(NewUserRequestDTO newUser) {
@@ -57,6 +62,15 @@ public class UserUsecase {
                 jti, user.getId(), user.getEmail(), user.getRole()
         );
         String refreshToken = securityService.generateRefreshToken(refreshTokenPayload);
+
+
+        // Luu RT
+        NewRTRequestDTO newRTRequestDTO = securityService.parseNewRefreshToken(refreshToken);
+        boolean saveNewRT = refreshTokenService.save(newRTRequestDTO);
+
+        if (!saveNewRT) {
+            throw new InternalServerException("Lỗi trong quá trình lưu RT!");
+        }
 
         return new AuthorizedResponseDTO(
                 user, accessToken, refreshToken
@@ -91,8 +105,22 @@ public class UserUsecase {
         );
         String refreshToken = securityService.generateRefreshToken(refreshTokenPayload);
 
+        // Luu RT
+        NewRTRequestDTO newRTRequestDTO = securityService.parseNewRefreshToken(refreshToken);
+        boolean saveNewRT = refreshTokenService.save(newRTRequestDTO);
+
+        if (!saveNewRT) {
+            throw new InternalServerException("Lỗi trong quá trình lưu RT!");
+        }
+
         return new AuthorizedResponseDTO(
                 userDto, accessToken, refreshToken
         );
+    }
+
+    public UserResponseDTO getMe(String accessToken) {
+        String userId = securityService.getPayloadFromAccessToken(accessToken).getUserId();
+        UserEntity user = repo.findById(userId);
+        return mapperDTO.toUserResponseDTO(user);
     }
 }

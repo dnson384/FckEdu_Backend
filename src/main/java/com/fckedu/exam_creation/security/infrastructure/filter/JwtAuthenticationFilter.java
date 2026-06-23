@@ -6,7 +6,6 @@ import com.fckedu.exam_creation.security.infrastructure.service.CustomUserDetail
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +16,43 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.util.List;
 
 @Slf4j
 @NullMarked
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            // User
+            "/user/login",
+            "/user/register",
+            // RT
+            "/refresh-token/generate-access-token",
+            // Swagger
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml"
+    );
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String currentPath = request.getServletPath();
+
+        return EXCLUDED_PATHS.stream()
+                .anyMatch(path -> pathMatcher.match(path, currentPath));
     }
 
     @Override
@@ -39,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException, java.io.IOException {
         try {
             // 1. Lấy Access Token từ Cookie thay vì Header Bearer
-            String jwt = getJwtFromCookie(request);
+            String jwt = getJwtFromRequest(request);
 
             // 2. Validate token
             if (jwt != null && tokenProvider.validateAccessToken(jwt)) {
@@ -65,13 +89,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // Hàm bổ trợ quét Cookie tìm "access_token"
-    private @Nullable String getJwtFromCookie(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("access_token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private @Nullable String getJwtFromRequest(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
         }
         return null;
     }

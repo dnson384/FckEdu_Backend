@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 !**/static/
+
+application-secret.yml
+application-local.yml

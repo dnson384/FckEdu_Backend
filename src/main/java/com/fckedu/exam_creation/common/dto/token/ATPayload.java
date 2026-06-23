@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ATPayload {
-    private String id;
+    private String userId;
     private String email;
     private String role;
 }

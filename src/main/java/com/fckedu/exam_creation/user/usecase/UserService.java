@@ -21,4 +21,9 @@ public class UserService {
                 .map(mapper::toCommonDTO)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản"));
     }
+
+    public CommonUserResponseDTO findById(String userId) {
+        return mapper.toCommonDTO(repo.findById(userId));
+    }
+
 }
