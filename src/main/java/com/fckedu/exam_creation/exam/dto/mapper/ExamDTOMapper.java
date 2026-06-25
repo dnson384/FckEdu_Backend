@@ -15,6 +15,7 @@ public class ExamDTOMapper {
     public ExamDetailDTO convertToExamDetailResponse(ExamEntity exam, List<QuestionDTO> questions) {
         ExamDetailDTO dto = new ExamDetailDTO();
         dto.setId(exam.getId());
+        dto.setUserId(exam.getUserId());
         dto.setName(exam.getName());
 
         List<QuestionDTO> validQuestions = new ArrayList<>();

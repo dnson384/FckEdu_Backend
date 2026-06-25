@@ -1,9 +1,12 @@
 package com.fckedu.exam_creation.exam.controller;
 
+import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
 import com.fckedu.exam_creation.exam.dto.request.GenerateExamPayload;
 import com.fckedu.exam_creation.exam.dto.response.ExamDTO;
 import com.fckedu.exam_creation.exam.dto.response.ExamDetailDTO;
 import com.fckedu.exam_creation.exam.usecase.ExamUsecase;
+import com.fckedu.exam_creation.user.usecase.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,23 +15,39 @@ import java.util.List;
 @RequestMapping("/exam")
 public class ExamController {
     private final ExamUsecase examUsecase;
+    private final UserService userService;
 
-    public ExamController(ExamUsecase examUsecase) {
+    public ExamController(ExamUsecase examUsecase, UserService userService) {
         this.examUsecase = examUsecase;
+        this.userService = userService;
     }
 
     @PostMapping("/generate")
-    public String generateExam(@RequestBody GenerateExamPayload payload) {
-        return examUsecase.generateExam(payload.getDraftId());
+    public ResponseEntity<String> generateExam(@RequestHeader("Authorization") String authorization, @RequestBody GenerateExamPayload payload) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(examUsecase.generateExam(payload.getDraftId(), user.getId()));
     }
 
     @GetMapping("/{examId}")
-    public ExamDetailDTO getExamById(@PathVariable String examId) {
-        return examUsecase.getExamById(examId);
+    public ResponseEntity<ExamDetailDTO> getExamById(@PathVariable String examId) {
+        return ResponseEntity.ok(examUsecase.getExamById(examId));
     }
 
     @GetMapping("/all")
-    public List<ExamDTO> getAllExams() {
-        return examUsecase.getAllExams();
+    public ResponseEntity<List<ExamDTO>> getAllExams(@RequestHeader("Authorization") String authorization) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(examUsecase.getAllUserExams(user.getId()));
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<ExamDTO>> getRecentExam(@RequestHeader("Authorization") String authorization) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(examUsecase.getRecentExams(user.getId()));
     }
 }

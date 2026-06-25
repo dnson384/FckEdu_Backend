@@ -16,13 +16,13 @@ public class DraftService {
         this.mapper = mapper;
     }
 
-    public DraftDTO getDraft(String draftId) {
-        DraftEntity draft = repo.getDraft(draftId);
+    public DraftDTO getDraft(String draftId, String userId) {
+        DraftEntity draft = repo.getDraft(draftId, userId);
         return mapper.toDTO(draft);
     }
 
-    public void deleteDraft(String draftId) {
-        repo.deleteDraft(draftId);
+    public void deleteDraft(String draftId, String userId) {
+        repo.deleteDraft(draftId, userId);
     }
 
 }

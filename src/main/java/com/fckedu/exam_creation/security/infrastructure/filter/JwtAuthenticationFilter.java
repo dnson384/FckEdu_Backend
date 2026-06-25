@@ -29,8 +29,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // User
             "/user/login",
             "/user/register",
+            "/user/logout",
             // RT
             "/refresh-token/generate-access-token",
+            // Static
+            "/static/**",
             // Swagger
             "/swagger-ui/**",
             "/swagger-ui.html",

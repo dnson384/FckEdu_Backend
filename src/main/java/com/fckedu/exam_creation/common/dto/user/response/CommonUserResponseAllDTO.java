@@ -1,15 +1,13 @@
-package com.fckedu.exam_creation.user.domain.entity;
+package com.fckedu.exam_creation.common.dto.user.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
+public class CommonUserResponseAllDTO {
     private String id;
     private String email;
     private String hashedPassword;
@@ -18,6 +16,4 @@ public class UserEntity {
     private String loginMethod;
     private String avatarUrl;
     private Boolean isActive;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

@@ -1,6 +1,6 @@
 package com.fckedu.exam_creation.security.infrastructure.service;
 
-import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
+import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseAllDTO;
 import com.fckedu.exam_creation.security.infrastructure.principal.CustomUserDetails;
 import com.fckedu.exam_creation.user.usecase.UserService;
 import org.jspecify.annotations.NonNull;
@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(@NonNull String email) throws UsernameNotFoundException {
-        CommonUserResponseDTO user = userService.findByEmail(email);
+        CommonUserResponseAllDTO user = userService.findByEmail(email);
 
         return new CustomUserDetails(user);
     }

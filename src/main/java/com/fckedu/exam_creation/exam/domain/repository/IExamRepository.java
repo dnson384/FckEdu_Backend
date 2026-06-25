@@ -9,5 +9,7 @@ public interface IExamRepository {
 
     ExamEntity getExamById(String examId);
 
-    List<ExamEntity> getAllExams();
+    List<ExamEntity> getAllUserExams(String userId);
+
+    List<ExamEntity> getRecentExams(String userId);
 }

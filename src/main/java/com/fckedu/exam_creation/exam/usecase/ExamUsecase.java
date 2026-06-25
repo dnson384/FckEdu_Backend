@@ -21,6 +21,7 @@ import com.fckedu.exam_creation.question.usecase.QuestionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,8 +42,8 @@ public class ExamUsecase {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public String generateExam(String draftId) {
-        DraftDTO draft = draftService.getDraft(draftId);
+    public String generateExam(String draftId, String userId) {
+        DraftDTO draft = draftService.getDraft(draftId, userId);
 
         List<ChapterExamEntity> chaptersExam = new ArrayList<>();
 
@@ -76,7 +77,7 @@ public class ExamUsecase {
 
         ExamEntity payload = new ExamEntity(
                 null,
-                null,
+                draft.getUserId(),
                 draftId,
                 draft.getExamName(),
                 chaptersExam,
@@ -86,12 +87,12 @@ public class ExamUsecase {
                                 q.getDifficultyLevel(),
                                 q.getQuestionIds()
                         ))
-                        .toList()
+                        .toList(),
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
-        String savedExamId = repo.saveExam(payload);
-        draftService.deleteDraft(savedExamId);
-        return savedExamId;
+        return repo.saveExam(payload);
     }
 
     public ExamDetailDTO getExamById(String examId) {
@@ -106,8 +107,8 @@ public class ExamUsecase {
         return mapper.convertToExamDetailResponse(exam, questions);
     }
 
-    public List<ExamDTO> getAllExams() {
-        List<ExamEntity> examEntities = repo.getAllExams();
+    public List<ExamDTO> getAllUserExams(String userId) {
+        List<ExamEntity> examEntities = repo.getAllUserExams(userId);
 
         List<String> chapterIds = examEntities.stream()
                 .flatMap(examEntity -> examEntity.getChapters().stream()
@@ -119,5 +120,10 @@ public class ExamUsecase {
         return examEntities.stream()
                 .map(mapper::convertToExamResponse)
                 .toList();
+    }
+
+    public List<ExamDTO> getRecentExams(String userId) {
+        List<ExamEntity> examEntities = repo.getRecentExams(userId);
+        return examEntities.stream().map(mapper::convertToExamResponse).toList();
     }
 }

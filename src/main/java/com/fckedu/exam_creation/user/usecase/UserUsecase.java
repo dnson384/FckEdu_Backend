@@ -17,6 +17,7 @@ import com.fckedu.exam_creation.user.dto.response.UserResponseDTO;
 import com.fckedu.exam_creation.user.infrastructure.repository.UserRepositoryImpl;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -43,7 +44,9 @@ public class UserUsecase {
                 "ROLE_TEACHER",
                 newUser.getLoginMethod(),
                 "",
-                true
+                true,
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         UserEntity createdUser = repo.save(newUserEntity);
@@ -118,9 +121,14 @@ public class UserUsecase {
         );
     }
 
-    public UserResponseDTO getMe(String accessToken) {
-        String userId = securityService.getPayloadFromAccessToken(accessToken).getUserId();
-        UserEntity user = repo.findById(userId);
-        return mapperDTO.toUserResponseDTO(user);
+    public boolean logout(String refreshToken) {
+        boolean isValidated = securityService.validateRefreshToken(refreshToken);
+
+        if (isValidated) {
+            RTPayload payload = securityService.getPayloadFromRefreshToken(refreshToken);
+            return refreshTokenService.delete(payload.getJti());
+        }
+
+        return false;
     }
 }

@@ -24,4 +24,8 @@ public class RefreshTokenService {
 
         return repo.save(entity);
     }
+
+    public boolean delete(String jti) {
+        return repo.delete(jti);
+    }
 }

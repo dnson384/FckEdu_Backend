@@ -10,10 +10,7 @@ import lombok.NoArgsConstructor;
 public class CommonUserResponseDTO {
     private String id;
     private String email;
-    private String hashedPassword;
     private String username;
     private String role;
-    private String loginMethod;
     private String avatarUrl;
-    private Boolean isActive;
 }

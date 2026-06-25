@@ -11,8 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateMatrixPayload {
-    String draftId;
-    String chapterId;
-    String lessonId;
-    List<MatrixItemEntity> matrix;
+    private String draftId;
+    private String userId;
+    private String chapterId;
+    private String lessonId;
+    private List<MatrixItemEntity> matrix;
 }

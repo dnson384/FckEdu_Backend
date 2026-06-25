@@ -74,7 +74,7 @@ public class PandocConverter {
             JsonNode meta = ast.get("meta");
             JsonNode blocks = ast.get("blocks");
 
-            List<NewQuestionImporterDTO> questionsRes = new ArrayList<NewQuestionImporterDTO>();
+            List<NewQuestionImporterDTO> questionsRes = new ArrayList<>();
             NewCategoryImporterDTO categoryRes = new NewCategoryImporterDTO();
             categoryRes.setLessons(new ArrayList<>());
 
