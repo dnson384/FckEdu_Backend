@@ -5,16 +5,15 @@ import org.jspecify.annotations.NonNull;
 import tools.jackson.databind.JsonNode;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.UUID;
 
 public class ParaExtractor {
-    public static void execute(JsonNode content, NewQuestionImporterDTO resBase, String uploadDir) {
+    public static void execute(
+            JsonNode content,
+            NewQuestionImporterDTO resBase,
+            Map<String, String> uploadedMediaMap
+    ) {
         if (content == null || !content.isArray() || content.isEmpty()) return;
 
 
@@ -30,31 +29,17 @@ public class ParaExtractor {
             resBase.getQuestion().setTemplate(currentTemplate + " \n<img_" + curVarIndex + ">\n ");
 
             String rawSrc = firstElement.get("c").get(2).get(0).asString();
-            Path sourcePath = Paths.get(rawSrc).toAbsolutePath();
-
-            // Lấy đuôi tệp
-            String extension = "";
-            int extIndex = rawSrc.lastIndexOf(".");
-            if (extIndex > 0) {
-                extension = rawSrc.substring(extIndex);
-            }
 
             // Tạo file với tên mới là UUID
-            String newFileName = UUID.randomUUID() + extension;
-            Path destPath = Paths.get(uploadDir, newFileName);
+            String fileName = java.nio.file.Paths.get(rawSrc).getFileName().toString();
+            String key = "media/" + fileName;
 
-            try {
-                // Di chuyển file ảnh tới thư mục chính thức
-                Files.move(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
+            String s3Key = uploadedMediaMap.get(key);
 
-                String publicUrl = getString(destPath);
-
-                imageMap.put("img_" + curVarIndex, publicUrl);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (Exception e) {
-                System.err.println("Lỗi di chuyển ảnh " + rawSrc + ": " + e.getMessage());
+            if (s3Key != null) {
+                imageMap.put("img_" + curVarIndex, s3Key);
+            } else {
+                System.err.println("Không tìm thấy ảnh trên S3 trong Map cho key: " + rawSrc);
             }
         }
         // Xử lý text & công thức

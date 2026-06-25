@@ -9,7 +9,7 @@ spring:
 
   mongodb:
     uri: "mongodb+srv://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@cluster0.96svcb8.mongodb.net/?appName=Cluster0"
-    database: test2
+    database: "test"
 
   security:
     oauth2:
@@ -31,3 +31,9 @@ app:
     refresh-secret: ${JWT_REFRESH_SECRET}
     access-expiration-ms: 900000
     refresh-expiration-ms: 604800000
+
+aws:
+  accessKey: "${AWS_ACCESS_KEY_ID}"
+  secretKey: "${AWS_SECRET_ACCESS_KEY}"
+  region: "ap-southeast-2"
+  bucketName: "fckedu-backend-storage-static"

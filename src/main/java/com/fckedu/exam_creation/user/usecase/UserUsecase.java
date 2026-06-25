@@ -43,7 +43,7 @@ public class UserUsecase {
                 newUser.getUsername(),
                 "ROLE_TEACHER",
                 newUser.getLoginMethod(),
-                "",
+                "avatars/default-avatar-user.png",
                 true,
                 LocalDateTime.now(),
                 LocalDateTime.now()

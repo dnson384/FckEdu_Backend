@@ -5,54 +5,53 @@ import com.fckedu.exam_creation.importer.infrastructure.pandoc.dto.ExtractedHead
 import com.fckedu.exam_creation.importer.infrastructure.pandoc.dto.HeaderContent;
 import com.fckedu.exam_creation.importer.infrastructure.pandoc.dto.PandocEleOutput;
 import com.fckedu.exam_creation.importer.infrastructure.pandoc.helper.*;
+import com.fckedu.exam_creation.storage.service.S3Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+@Component
 public class PandocConverter {
-    private final String uploadDir;
-    private final String staticDir;
+    private final S3Service s3Service;
     private final ObjectMapper objectMapper;
 
-    public PandocConverter() {
+    @Autowired
+    public PandocConverter(S3Service s3Service) {
+        this.s3Service = s3Service;
         this.objectMapper = new ObjectMapper();
-        // Lấy thư mục gốc của project
-        String userDir = System.getProperty("user.dir");
-        this.staticDir = Paths.get(userDir, "static").toString();
-        this.uploadDir = Paths.get(this.staticDir, "uploads").toString();
-
-        // Đảm bảo thư mục tồn tại (tương đương fs.ensureDirSync)
-        File uploadFolder = new File(this.uploadDir);
-        if (!uploadFolder.exists()) {
-            uploadFolder.mkdirs();
-        }
     }
 
     public ParsedDataOutput parse(byte[] fileBuffer) throws Exception {
-        String tempFileName = "temp_" + UUID.randomUUID().toString() + ".docx";
-        Path tempFilePath = Paths.get(this.uploadDir, tempFileName);
+        String userDir = System.getProperty("user.dir");
+        String workspacePath = Paths.get(userDir, "static", "uploads", "pandoc_"
+                + UUID.randomUUID()).toString();
+
+        File workspaceFolder = new File(workspacePath);
+        if (!workspaceFolder.exists()) {
+            workspaceFolder.mkdirs();
+        }
+
+        Path tempFilePath = Paths.get(workspacePath, "input.docx");
 
         try {
             // 1. Lưu buffer thành file tạm
             Files.write(tempFilePath, fileBuffer);
 
             // 2. Chạy lệnh Pandoc bằng ProcessBuilder
-            String extractMediaArg = "--extract-media=" + this.uploadDir;
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "pandoc",
                     "-f", "docx",
                     "-t", "json",
                     "--mathjax",
-                    "--extract-media=" + this.uploadDir, // Đảm bảo đúng định dạng
+                    "--extract-media=" + workspacePath,
                     tempFilePath.toString()
             );
 
@@ -60,7 +59,6 @@ public class PandocConverter {
 
             // Đọc kết quả từ luồng đầu ra của Pandoc
             byte[] processOutput = process.getInputStream().readAllBytes();
-            byte[] errorOutput = process.getErrorStream().readAllBytes();
             int exitCode = process.waitFor();
 
             if (exitCode != 0) {
@@ -68,6 +66,20 @@ public class PandocConverter {
             }
 
             String jsonResult = new String(processOutput);
+
+            // Đẩy ảnh lên S3
+            Map<String, String> uploadedMediaMap = new HashMap<>();
+            File mediaFolder = new File(workspacePath, "media");
+
+            if (mediaFolder.exists() && mediaFolder.isDirectory()) {
+                File[] images = mediaFolder.listFiles();
+                if (images != null) {
+                    for (File img : images) {
+                        String s3Key = s3Service.uploadLocalFile(img, "media");
+                        uploadedMediaMap.put("media/" + img.getName(), s3Key);
+                    }
+                }
+            }
 
             // 3. Phân tích JSON AST bằng Jackson
             JsonNode ast = objectMapper.readTree(jsonResult);
@@ -189,7 +201,10 @@ public class PandocConverter {
                             tempBankStat = new BankStatDTO();
                         }
                     } else if ("Para".equals(type)) {
-                        ParaExtractor.execute(content, questionsRes.get(questionsRes.size() - 1), this.uploadDir);
+                        ParaExtractor.execute(
+                                content,
+                                questionsRes.get(questionsRes.size() - 1),
+                                uploadedMediaMap);
                     } else if (hasOptions && "BulletList".equals(type)) {
                         for (JsonNode raw : content) {
                             questionsRes.get(questionsRes.size() - 1).getOptions().add(new OptionsDataImporterDTO());
@@ -197,7 +212,7 @@ public class PandocConverter {
                             BulletListExtractor.execute(raw.get(0).get("c"),
                                     questionsRes.get(questionsRes.size() - 1),
                                     questionsRes.get(questionsRes.size() - 1).getOptions().size() - 1,
-                                    this.uploadDir);
+                                    uploadedMediaMap);
                         }
                     }
                 }
@@ -215,10 +230,7 @@ public class PandocConverter {
             throw new Exception("Lỗi chuyển đổi file.");
         } finally {
             // 5. Xóa file tạm
-            try {
-                Files.deleteIfExists(tempFilePath);
-            } catch (IOException e) {
-            }
+            deleteDirectoryRecursively(workspaceFolder);
         }
     }
 
@@ -229,5 +241,17 @@ public class PandocConverter {
             }
         }
         return false;
+    }
+
+    private void deleteDirectoryRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] entries = file.listFiles();
+            if (entries != null) {
+                for (File entry : entries) {
+                    deleteDirectoryRecursively(entry);
+                }
+            }
+        }
+        file.delete();
     }
 }

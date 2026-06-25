@@ -1,18 +1,26 @@
 package com.fckedu.exam_creation.exam.dto.mapper;
 
+import com.fckedu.exam_creation.common.dto.question.response.ContentDTO;
 import com.fckedu.exam_creation.common.dto.question.response.QuestionDTO;
+import com.fckedu.exam_creation.common.dto.question.response.VariablesDTO;
 import com.fckedu.exam_creation.exam.domain.entity.ChapterExamEntity;
 import com.fckedu.exam_creation.exam.domain.entity.ExamEntity;
 import com.fckedu.exam_creation.exam.dto.response.*;
+import com.fckedu.exam_creation.storage.service.S3Service;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 public class ExamDTOMapper {
-    public ExamDetailDTO convertToExamDetailResponse(ExamEntity exam, List<QuestionDTO> questions) {
+    public ExamDetailDTO convertToExamDetailResponse(
+            ExamEntity exam,
+            List<QuestionDTO> questions,
+            S3Service s3Service) {
         ExamDetailDTO dto = new ExamDetailDTO();
         dto.setId(exam.getId());
         dto.setUserId(exam.getUserId());
@@ -36,10 +44,57 @@ public class ExamDTOMapper {
                     QuestionDTO sampleQuestion = groupedList.get(0);
 
                     List<QuestionDetailDTO> detailDTOs = groupedList.stream()
-                            .map(q -> new QuestionDetailDTO(
-                                    q.getId(),
-                                    q.getQuestion(),
-                                    q.getOptions()))
+                            .map(q -> {
+                                QuestionDetailDTO questionDetailDTO = new QuestionDetailDTO();
+                                questionDetailDTO.setId(q.getId());
+
+                                ContentDTO question = q.getQuestion();
+
+                                Map<String, String> questionImages = question.getVariables().getImage();
+                                Map<String, String> newQuestionImages = new HashMap<>(questionImages);
+
+                                if (!questionImages.isEmpty()) {
+                                    newQuestionImages.replaceAll(
+                                            (key, value) -> s3Service.generatePresignedUrl(value)
+                                    );
+                                }
+                                ContentDTO newQuestion = new ContentDTO(
+                                        question.getTemplate(),
+                                        new VariablesDTO(
+                                                question.getVariables().getMath(),
+                                                newQuestionImages
+                                        )
+                                );
+
+                                List<ContentDTO> newOptions = q.getOptions().stream().map(option -> {
+                                            Map<String, String> optionImages = option.getVariables().getImage();
+                                            Map<String, String> newOptionImages = new HashMap<>();
+
+                                            if (!optionImages.isEmpty()) {
+                                                for (Map.Entry<String, String> entry : optionImages.entrySet()) {
+                                                    String key = entry.getKey();
+                                                    String value = entry.getValue();
+
+                                                    newOptionImages.put(key, s3Service.generatePresignedUrl(value));
+                                                }
+                                            }
+
+                                            VariablesDTO newVariablesDTO = new VariablesDTO(
+                                                    option.getVariables().getMath(),
+                                                    newOptionImages
+                                            );
+
+                                            return new ContentDTO(
+                                                    option.getTemplate(),
+                                                    newVariablesDTO
+                                            );
+                                        })
+                                        .toList();
+                                return new QuestionDetailDTO(
+                                        q.getId(),
+                                        newQuestion,
+                                        newOptions);
+                            })
                             .toList();
 
                     return new ExamQuestionDTO(

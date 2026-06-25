@@ -24,10 +24,10 @@ public class ImporterService {
     private final CategoryService categoryService;
     private final QuestionService questionService;
 
-    public ImporterService(CategoryService categoryService, QuestionService questionService) {
+    public ImporterService(CategoryService categoryService, QuestionService questionService, PandocConverter fileParser) {
         this.categoryService = categoryService;
         this.questionService = questionService;
-        this.fileParser = new PandocConverter();
+        this.fileParser = fileParser;
     }
 
     @Transactional(rollbackFor = Exception.class)
