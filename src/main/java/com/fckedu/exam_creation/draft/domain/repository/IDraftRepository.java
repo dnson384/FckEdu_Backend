@@ -11,7 +11,7 @@ import java.util.List;
 public interface IDraftRepository {
     String createDraft(DraftEntity draft);
 
-    DraftEntity getDraft(String draftId);
+    DraftEntity getDraft(String draftId, String userId);
 
     boolean updateChapters(UpdateChaptersPayload payload);
 
@@ -21,5 +21,9 @@ public interface IDraftRepository {
 
     boolean updateMatrixDetails(List<UpdateMatrixDetailsPayload> payloads);
 
-    void deleteDraft(String draftId);
+    void deleteDraft(String draftId, String userId);
+
+    List<DraftEntity> getRecentDraft(String userId);
+
+    List<DraftEntity> getAllUserDrafts(String userId);
 }

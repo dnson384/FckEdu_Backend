@@ -11,8 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 public class DraftDTO {
     private String id;
+    private String userId;
     private String examName;
-    Integer questionsCount;
-    List<String> questionTypes;
-    List<ChapterDraftDTO> chapters;
+    private Integer questionsCount;
+    private List<String> questionTypes;
+    private List<ChapterDraftDTO> chapters;
 }

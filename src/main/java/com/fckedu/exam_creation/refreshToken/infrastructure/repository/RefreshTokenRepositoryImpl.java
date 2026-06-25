@@ -4,10 +4,12 @@ import com.fckedu.exam_creation.common.exception.NotFoundException;
 import com.fckedu.exam_creation.refreshToken.domain.entity.RefreshTokenEntity;
 import com.fckedu.exam_creation.refreshToken.infrastructure.document.RefreshTokenDocument;
 import com.fckedu.exam_creation.refreshToken.infrastructure.mapper.RefreshTokenMapper;
+import com.mongodb.client.result.DeleteResult;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class RefreshTokenRepositoryImpl {
@@ -31,7 +33,7 @@ public class RefreshTokenRepositoryImpl {
                 Criteria.where("jti").is(jti),
                 Criteria.where("userId").is(userId)
         );
-        
+
         Query query = new Query(criteria);
 
         RefreshTokenDocument doc = mongoTemplate.findOne(query, RefreshTokenDocument.class);
@@ -40,5 +42,17 @@ public class RefreshTokenRepositoryImpl {
             throw new NotFoundException("Không tìm thấy RT");
         }
         return mapper.toEntity(doc);
+    }
+
+    @Transactional
+    public boolean delete(String jti) {
+        Query query = new Query(Criteria.where("jti").is(jti));
+
+        DeleteResult result = mongoTemplate.remove(query, RefreshTokenDocument.class);
+        
+        if (result.getDeletedCount() != 1) {
+            throw new RuntimeException("Xóa Refresh Token thất bại do không tìm thấy hoặc xóa dư. Đang thực hiện Rollback!");
+        }
+        return true;
     }
 }

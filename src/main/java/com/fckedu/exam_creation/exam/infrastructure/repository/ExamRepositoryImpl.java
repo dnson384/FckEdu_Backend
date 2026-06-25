@@ -5,7 +5,10 @@ import com.fckedu.exam_creation.exam.domain.entity.ExamEntity;
 import com.fckedu.exam_creation.exam.domain.repository.IExamRepository;
 import com.fckedu.exam_creation.exam.infrastructure.document.ExamDocument;
 import com.fckedu.exam_creation.exam.infrastructure.mapper.ExamMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,8 +40,9 @@ public class ExamRepositoryImpl implements IExamRepository {
     }
 
     @Override
-    public List<ExamEntity> getAllExams() {
-        List<ExamDocument> exams = mongoTemplate.findAll(ExamDocument.class);
+    public List<ExamEntity> getAllUserExams(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        List<ExamDocument> exams = mongoTemplate.find(query, ExamDocument.class);
 
         if (exams.isEmpty()) {
             throw new NotFoundException("Danh sách bài kiểm tra trống");
@@ -46,4 +50,21 @@ public class ExamRepositoryImpl implements IExamRepository {
 
         return exams.stream().map(mapper::docToEntity).toList();
     }
+
+    @Override
+    public List<ExamEntity> getRecentExams(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId))
+                .with(Sort.by(Sort.Direction.DESC, "updatedAt"))
+                .limit(5);
+
+        List<ExamDocument> examDocuments = mongoTemplate.find(query, ExamDocument.class);
+
+        if (examDocuments.isEmpty()) {
+            throw new NotFoundException("Người dùng chưa tạo hoàn thiện đề kiểm tra nào");
+        }
+
+        return examDocuments.stream().map(mapper::docToEntity).toList();
+
+    }
+
 }

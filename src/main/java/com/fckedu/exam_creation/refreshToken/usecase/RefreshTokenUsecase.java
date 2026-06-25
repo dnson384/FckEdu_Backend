@@ -2,7 +2,7 @@ package com.fckedu.exam_creation.refreshToken.usecase;
 
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
 import com.fckedu.exam_creation.common.dto.token.RTPayload;
-import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
+import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseAllDTO;
 import com.fckedu.exam_creation.common.exception.NotFoundException;
 import com.fckedu.exam_creation.common.exception.UnAuthorizedException;
 import com.fckedu.exam_creation.refreshToken.domain.entity.RefreshTokenEntity;
@@ -36,7 +36,7 @@ public class RefreshTokenUsecase {
 
         RefreshTokenEntity token = this.getRefreshToken(rtPayload.getJti(), rtPayload.getUserId());
 
-        CommonUserResponseDTO user = userService.findById(token.getUserId());
+        CommonUserResponseAllDTO user = userService.findById(token.getUserId());
 
         if (user == null) {
             throw new NotFoundException("Người dùng không tồn tại");

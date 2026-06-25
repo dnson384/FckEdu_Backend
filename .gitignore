@@ -31,7 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-!**/static/
+static/
 
-application-secret.yml
-application-local.yml
+.env

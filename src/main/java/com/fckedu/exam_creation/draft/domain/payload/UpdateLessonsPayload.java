@@ -10,8 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateLessonsPayload {
-    String draftId;
-    String chapterId;
-    List<UpdateParam> add;
-    List<String> del;
+    private String draftId;
+    private String userId;
+    private String chapterId;
+    private List<UpdateParam> add;
+    private List<String> del;
 }

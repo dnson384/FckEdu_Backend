@@ -38,8 +38,9 @@ public class DraftUsecase {
         this.util = util;
     }
 
-    public String createDraft(CreateDraftDTO payload) {
+    public String createDraft(CreateDraftDTO payload, String userId) {
         DraftEntity payloadDomain = new DraftEntity();
+        payloadDomain.setUserId(userId);
         payloadDomain.setExamName(payload.getExamName());
         payloadDomain.setQuestionsCount(payload.getQuestionsCount());
         payloadDomain.setQuestionTypes(payload.getQuestionTypes());
@@ -47,14 +48,15 @@ public class DraftUsecase {
         return repo.createDraft(payloadDomain);
     }
 
-    public DraftDTO getDraft(String draftId) {
-        DraftEntity draft = repo.getDraft(draftId);
+    public DraftDTO getDraft(String draftId, String userId) {
+        DraftEntity draft = repo.getDraft(draftId, userId);
         return mapper.toDTO(draft);
     }
 
-    public boolean updateChapters(UpdateChaptersDraftDTO payload) {
+    public boolean updateChapters(UpdateChaptersDraftDTO payload, String userId) {
         UpdateChaptersPayload payloadDomain = new UpdateChaptersPayload(
                 payload.getDraftId(),
+                userId,
                 payload.getAdd().stream()
                         .map(item -> new UpdateParam(
                                 item.getId(),
@@ -67,9 +69,10 @@ public class DraftUsecase {
         return repo.updateChapters(payloadDomain);
     }
 
-    public boolean updateLessons(UpdateLessonsDraftDTO payload) {
+    public boolean updateLessons(UpdateLessonsDraftDTO payload, String userId) {
         UpdateLessonsPayload payloadDomain = new UpdateLessonsPayload(
                 payload.getDraftId(),
+                userId,
                 payload.getChapterId(),
                 payload.getAdd().stream()
                         .map(item -> new UpdateParam(
@@ -83,8 +86,8 @@ public class DraftUsecase {
         return repo.updateLessons(payloadDomain);
     }
 
-    public boolean generateMatrix(String draftId) {
-        DraftDTO draft = getDraft(draftId);
+    public boolean generateMatrix(String draftId, String userId) {
+        DraftDTO draft = getDraft(draftId, userId);
 
         if (util.hasMatrix(draft.getChapters(), draft.getQuestionsCount())) {
             return true;
@@ -132,6 +135,7 @@ public class DraftUsecase {
             for (LessonDraftDTO lesson : chapter.getLessons()) {
                 payload.add(new UpdateMatrixPayload(
                         draftId,
+                        userId,
                         chapter.getId(),
                         lesson.getId(),
                         lesson.getMatrix().stream()
@@ -148,8 +152,8 @@ public class DraftUsecase {
         return repo.updateMatrix(payload);
     }
 
-    public boolean generateMatrixDetails(String draftId) {
-        DraftDTO draft = getDraft(draftId);
+    public boolean generateMatrixDetails(String draftId, String userId) {
+        DraftDTO draft = getDraft(draftId, userId);
 
         if (util.hasMatrixDetail(draft.getChapters(), draft.getQuestionsCount())) {
             return true;
@@ -185,6 +189,7 @@ public class DraftUsecase {
                 if (lesson.getMatrixDetails() != null && !lesson.getMatrixDetails().isEmpty()) {
                     payload.add(new UpdateMatrixDetailsPayload(
                             draft.getId(),
+                            userId,
                             chapter.getId(),
                             lesson.getId(),
                             lesson.getMatrixDetails().stream()
@@ -195,5 +200,15 @@ public class DraftUsecase {
             }
         }
         return repo.updateMatrixDetails(payload);
+    }
+
+    public List<DraftDTO> getRecentDraft(String userId) {
+        List<DraftEntity> draftEntities = repo.getRecentDraft(userId);
+        return draftEntities.stream().map(mapper::toDTO).toList();
+    }
+
+    public List<DraftDTO> getAllUserDrafts(String userId) {
+        List<DraftEntity> draftEntities = repo.getAllUserDrafts(userId);
+        return draftEntities.stream().map(mapper::toDTO).toList();
     }
 }

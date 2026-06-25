@@ -1,6 +1,6 @@
 package com.fckedu.exam_creation.security.infrastructure.principal;
 
-import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
+import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseAllDTO;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,9 +11,9 @@ import java.util.Collections;
 
 @Data
 public class CustomUserDetails implements UserDetails {
-    private final CommonUserResponseDTO user;
+    private final CommonUserResponseAllDTO user;
 
-    public CustomUserDetails(CommonUserResponseDTO user) {
+    public CustomUserDetails(CommonUserResponseAllDTO user) {
         this.user = user;
     }
 

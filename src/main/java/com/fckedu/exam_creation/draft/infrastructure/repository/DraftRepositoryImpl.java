@@ -16,6 +16,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -44,8 +45,16 @@ public class DraftRepositoryImpl implements IDraftRepository {
     }
 
     @Override
-    public DraftEntity getDraft(String draftId) {
-        DraftDocument draft = mongoTemplate.findById(draftId, DraftDocument.class);
+    public DraftEntity getDraft(String draftId, String userId) {
+        Criteria criteria = new Criteria();
+        criteria.andOperator(
+                Criteria.where("_id").is(draftId),
+                Criteria.where("userId").is(userId)
+        );
+
+        Query query = new Query(criteria);
+
+        DraftDocument draft = mongoTemplate.findOne(query, DraftDocument.class);
 
         if (draft == null) {
             throw new NotFoundException("Bản nháp không tồn tại");
@@ -56,7 +65,7 @@ public class DraftRepositoryImpl implements IDraftRepository {
 
     @Override
     public boolean updateChapters(UpdateChaptersPayload payload) {
-        DraftEntity draft = getDraft(payload.getDraftId());
+        DraftEntity draft = getDraft(payload.getDraftId(), payload.getUserId());
 
         List<String> chapterIds = draft.getChapters().stream().map(ChapterDraftEntity::getId).toList();
 
@@ -105,7 +114,7 @@ public class DraftRepositoryImpl implements IDraftRepository {
 
     @Override
     public boolean updateLessons(UpdateLessonsPayload payload) {
-        DraftDocument draft = draftMapper.toDocument(getDraft(payload.getDraftId()));
+        DraftDocument draft = draftMapper.toDocument(getDraft(payload.getDraftId(), payload.getUserId()));
 
         ChapterDraftDocument curChapter = draft.getChapters().stream()
                 .filter(c -> c.getId().equals(payload.getChapterId()))
@@ -209,9 +218,35 @@ public class DraftRepositoryImpl implements IDraftRepository {
     }
 
     @Override
-    public void deleteDraft(String draftId) {
-        Query query = new Query(Criteria.where("_id").is(new ObjectId(draftId)));
+    public void deleteDraft(String draftId, String userId) {
+        Criteria criteria = new Criteria();
+        criteria.andOperator(
+                Criteria.where("_id").is(new ObjectId(draftId)),
+                Criteria.where("userId").is(new ObjectId(userId))
+        );
+
+        Query query = new Query(criteria);
+
         DeleteResult result = mongoTemplate.remove(query, DraftDocument.class);
         result.getDeletedCount();
+    }
+
+    @Override
+    public List<DraftEntity> getRecentDraft(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId))
+                .with(Sort.by(Sort.Direction.DESC, "updatedAt"))
+                .limit(5);
+
+        List<DraftDocument> draftDocuments = mongoTemplate.find(query, DraftDocument.class);
+
+        return draftDocuments.stream().map(draftMapper::toEntity).toList();
+    }
+
+    @Override
+    public List<DraftEntity> getAllUserDrafts(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        List<DraftDocument> draftDocuments = mongoTemplate.find(query, DraftDocument.class);
+
+        return draftDocuments.stream().map(draftMapper::toEntity).toList();
     }
 }
