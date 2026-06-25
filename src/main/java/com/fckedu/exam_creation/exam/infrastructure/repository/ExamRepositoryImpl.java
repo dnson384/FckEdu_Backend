@@ -59,10 +59,6 @@ public class ExamRepositoryImpl implements IExamRepository {
 
         List<ExamDocument> examDocuments = mongoTemplate.find(query, ExamDocument.class);
 
-        if (examDocuments.isEmpty()) {
-            throw new NotFoundException("Người dùng chưa tạo hoàn thiện đề kiểm tra nào");
-        }
-
         return examDocuments.stream().map(mapper::docToEntity).toList();
 
     }
