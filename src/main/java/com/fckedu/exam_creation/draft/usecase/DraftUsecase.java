@@ -18,6 +18,7 @@ import com.fckedu.exam_creation.draft.dto.request.UpdateLessonsDraftDTO;
 import com.fckedu.exam_creation.draft.usecase.util.DraftUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,12 +40,16 @@ public class DraftUsecase {
     }
 
     public String createDraft(CreateDraftDTO payload, String userId) {
-        DraftEntity payloadDomain = new DraftEntity();
-        payloadDomain.setUserId(userId);
-        payloadDomain.setExamName(payload.getExamName());
-        payloadDomain.setQuestionsCount(payload.getQuestionsCount());
-        payloadDomain.setQuestionTypes(payload.getQuestionTypes());
-
+        DraftEntity payloadDomain = new DraftEntity(
+                null,
+                userId,
+                payload.getExamName(),
+                payload.getQuestionsCount(),
+                payload.getQuestionTypes(),
+                new ArrayList<>(),
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
         return repo.createDraft(payloadDomain);
     }
 

@@ -244,7 +244,8 @@ public class DraftRepositoryImpl implements IDraftRepository {
 
     @Override
     public List<DraftEntity> getAllUserDrafts(String userId) {
-        Query query = new Query(Criteria.where("userId").is(userId));
+        Query query = new Query(Criteria.where("userId").is(userId))
+                .with(Sort.by(Sort.Direction.DESC, "updatedAt"));
         List<DraftDocument> draftDocuments = mongoTemplate.find(query, DraftDocument.class);
 
         return draftDocuments.stream().map(draftMapper::toEntity).toList();
