@@ -1,9 +1,7 @@
 package com.fckedu.exam_creation.user.controller;
 
 import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
-import com.fckedu.exam_creation.user.dto.request.LoginUserRequestDTO;
-import com.fckedu.exam_creation.user.dto.request.NewUserRequestDTO;
-import com.fckedu.exam_creation.user.dto.request.UpdateAvatarRequestDTO;
+import com.fckedu.exam_creation.user.dto.request.*;
 import com.fckedu.exam_creation.user.dto.response.AuthorizedResponseDTO;
 import com.fckedu.exam_creation.user.dto.response.UserResponseDTO;
 import com.fckedu.exam_creation.user.usecase.UserService;
@@ -105,5 +103,26 @@ public class UserController {
         CommonUserResponseDTO user = userService.getMe(accessToken);
 
         return ResponseEntity.ok(userUsecase.updateAvatar(user.getId(), payload.getS3Key()));
+    }
+
+    @PutMapping("/update-user")
+    public ResponseEntity<Boolean> updateUser(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody UpdateUserRequestDTO payload) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(userUsecase.updateUser(user.getId(), payload));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Boolean> changePassword(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody ChangePasswordRequestDTO payload
+    ) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(userUsecase.changePassword(user.getId(), payload));
     }
 }

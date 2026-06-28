@@ -10,6 +10,4 @@ public interface IUserRepository {
     UserEntity save(UserEntity newUser);
 
     UserEntity findById(String userId);
-
-    String updateAvatar(String userId, String s3Key);
 }

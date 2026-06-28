@@ -11,8 +11,10 @@ import com.fckedu.exam_creation.security.service.SecurityService;
 import com.fckedu.exam_creation.storage.service.S3Service;
 import com.fckedu.exam_creation.user.domain.entity.UserEntity;
 import com.fckedu.exam_creation.user.dto.mapper.UserDTOMapper;
+import com.fckedu.exam_creation.user.dto.request.ChangePasswordRequestDTO;
 import com.fckedu.exam_creation.user.dto.request.LoginUserRequestDTO;
 import com.fckedu.exam_creation.user.dto.request.NewUserRequestDTO;
+import com.fckedu.exam_creation.user.dto.request.UpdateUserRequestDTO;
 import com.fckedu.exam_creation.user.dto.response.AuthorizedResponseDTO;
 import com.fckedu.exam_creation.user.dto.response.UserResponseDTO;
 import com.fckedu.exam_creation.user.infrastructure.repository.UserRepositoryImpl;
@@ -136,15 +138,51 @@ public class UserUsecase {
     }
 
     public boolean updateAvatar(String userId, String s3Key) {
-        String oldAvatar = repo.updateAvatar(userId, s3Key);
-
-        if (oldAvatar.equals("avatars/default-avatar-user.png")) {
-            return true;
-        } else {
-            s3Service.deleteFile(oldAvatar);
-            return true;
+        UserEntity user = repo.findById(userId);
+        if (user == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản");
         }
 
+        String oldAvatar = user.getAvatarUrl();
+        String newAvatar = "avatars/" + s3Key;
 
+        user.setAvatarUrl(newAvatar);
+        UserEntity updatedUser = repo.save(user);
+
+        if (updatedUser != null && !oldAvatar.equals("avatars/default-avatar-user.png")) {
+            s3Service.deleteFile(oldAvatar);
+        }
+        return true;
+    }
+
+    public boolean updateUser(String userId, UpdateUserRequestDTO payload) {
+        UserEntity user = repo.findById(userId);
+        if (user == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+
+        user.setUsername(payload.getUsername());
+
+        return repo.save(user) != null;
+    }
+
+    public boolean changePassword(String userId, ChangePasswordRequestDTO payload) {
+        if (!payload.getNewPassword().equals(payload.getConfirmNewPassword())) {
+            throw new UnAuthorizedException("Mật khẩu xác nhận của mật khẩu mới không trùng khớp");
+        }
+
+        UserEntity user = repo.findById(userId);
+        if (user == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+
+        if (!securityService.validatePassword(payload.getOldPassword(), user.getHashedPassword())) {
+            throw new UnAuthorizedException("Mật khẩu cũ không chính xác");
+        }
+
+        String newHashedPassword = securityService.hashPassword(payload.getNewPassword());
+
+        user.setHashedPassword(newHashedPassword);
+        return repo.save(user) != null;
     }
 }
