@@ -8,6 +8,7 @@ import com.fckedu.exam_creation.common.exception.NotFoundException;
 import com.fckedu.exam_creation.common.exception.UnAuthorizedException;
 import com.fckedu.exam_creation.refreshToken.usecase.RefreshTokenService;
 import com.fckedu.exam_creation.security.service.SecurityService;
+import com.fckedu.exam_creation.storage.service.S3Service;
 import com.fckedu.exam_creation.user.domain.entity.UserEntity;
 import com.fckedu.exam_creation.user.dto.mapper.UserDTOMapper;
 import com.fckedu.exam_creation.user.dto.request.LoginUserRequestDTO;
@@ -26,12 +27,14 @@ public class UserUsecase {
     private final UserDTOMapper mapperDTO;
     private final SecurityService securityService;
     private final RefreshTokenService refreshTokenService;
+    private final S3Service s3Service;
 
-    public UserUsecase(UserRepositoryImpl repo, UserDTOMapper mapperDTO, SecurityService securityService, RefreshTokenService refreshTokenService) {
+    public UserUsecase(UserRepositoryImpl repo, UserDTOMapper mapperDTO, SecurityService securityService, RefreshTokenService refreshTokenService, S3Service s3Service) {
         this.repo = repo;
         this.mapperDTO = mapperDTO;
         this.securityService = securityService;
         this.refreshTokenService = refreshTokenService;
+        this.s3Service = s3Service;
     }
 
     public AuthorizedResponseDTO register(NewUserRequestDTO newUser) {
@@ -130,5 +133,18 @@ public class UserUsecase {
         }
 
         return false;
+    }
+
+    public boolean updateAvatar(String userId, String s3Key) {
+        String oldAvatar = repo.updateAvatar(userId, s3Key);
+
+        if (oldAvatar.equals("avatars/default-avatar-user.png")) {
+            return true;
+        } else {
+            s3Service.deleteFile(oldAvatar);
+            return true;
+        }
+
+
     }
 }

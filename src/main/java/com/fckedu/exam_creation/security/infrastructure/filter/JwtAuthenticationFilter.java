@@ -65,7 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
         try {
-            // 1. Lấy Access Token từ Cookie thay vì Header Bearer
             String jwt = getJwtFromRequest(request);
 
             // 2. Validate token
