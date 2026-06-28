@@ -3,6 +3,7 @@ package com.fckedu.exam_creation.user.controller;
 import com.fckedu.exam_creation.common.dto.user.response.CommonUserResponseDTO;
 import com.fckedu.exam_creation.user.dto.request.LoginUserRequestDTO;
 import com.fckedu.exam_creation.user.dto.request.NewUserRequestDTO;
+import com.fckedu.exam_creation.user.dto.request.UpdateAvatarRequestDTO;
 import com.fckedu.exam_creation.user.dto.response.AuthorizedResponseDTO;
 import com.fckedu.exam_creation.user.dto.response.UserResponseDTO;
 import com.fckedu.exam_creation.user.usecase.UserService;
@@ -24,7 +25,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> register(@RequestBody NewUserRequestDTO newUser, HttpServletResponse response) {
+    public ResponseEntity<UserResponseDTO> register(
+            @RequestBody NewUserRequestDTO newUser,
+            HttpServletResponse response) {
         AuthorizedResponseDTO dto = userUsecase.register(newUser);
 
         Cookie accessToken = new Cookie(
@@ -53,7 +56,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@RequestBody LoginUserRequestDTO payload, HttpServletResponse response) {
+    public ResponseEntity<UserResponseDTO> login(
+            @RequestBody LoginUserRequestDTO payload,
+            HttpServletResponse response) {
         AuthorizedResponseDTO dto = userUsecase.login(payload);
 
         Cookie accessToken = new Cookie(
@@ -87,8 +92,18 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public CommonUserResponseDTO getMe(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<CommonUserResponseDTO> getMe(@RequestHeader("Authorization") String authorization) {
         String accessToken = authorization.substring(7);
-        return userService.getMe(accessToken);
+        return ResponseEntity.ok(userService.getMe(accessToken));
+    }
+
+    @PutMapping("/avatar")
+    public ResponseEntity<Boolean> updateAvatar(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody UpdateAvatarRequestDTO payload) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(userUsecase.updateAvatar(user.getId(), payload.getS3Key()));
     }
 }

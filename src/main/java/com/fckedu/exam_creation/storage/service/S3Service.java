@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -80,5 +81,26 @@ public class S3Service {
                 .build();
 
         return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    public void deleteFile(String objectKey) {
+        if (objectKey == null || objectKey.trim().isEmpty()) {
+            System.out.println("Không có gì để xóa.");
+            return;
+        }
+
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            System.out.println("Đã xóa thành công file: " + objectKey);
+
+        } catch (Exception e) {
+            System.err.println("Lỗi khi xóa file trên S3: " + e.getMessage());
+            throw e;
+        }
     }
 }

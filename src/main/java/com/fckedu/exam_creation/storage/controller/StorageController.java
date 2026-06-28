@@ -13,13 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/storage")
+@RequestMapping("/storage")
 public class StorageController {
 
     @Autowired
     private S3Service s3Service;
 
-    @PostMapping("/upload/avatar")
+    @PostMapping("/avatar")
     public ResponseEntity<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         try {
             String s3Key = s3Service.uploadFile(file, "avatars");
