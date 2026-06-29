@@ -13,4 +13,6 @@ public class CommonUserResponseDTO {
     private String username;
     private String role;
     private String avatarUrl;
+    private Boolean isActive;
+    private String accountType;
 }

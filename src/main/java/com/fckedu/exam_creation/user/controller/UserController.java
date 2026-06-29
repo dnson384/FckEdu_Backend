@@ -118,11 +118,29 @@ public class UserController {
     @PutMapping("/change-password")
     public ResponseEntity<Boolean> changePassword(
             @RequestHeader("Authorization") String authorization,
-            @RequestBody ChangePasswordRequestDTO payload
+            @RequestBody ChangePasswordRequestDTO reqPayload
     ) {
         String accessToken = authorization.substring(7);
         CommonUserResponseDTO user = userService.getMe(accessToken);
 
-        return ResponseEntity.ok(userUsecase.changePassword(user.getId(), payload));
+        return ResponseEntity.ok(userUsecase.changePassword(user.getId(), reqPayload));
+    }
+
+    @PostMapping("/lock")
+    public ResponseEntity<Boolean> lockAccount(
+            @RequestHeader("Authorization") String authorization,
+            @CookieValue(value = "refreshToken") String refreshToken
+    ) {
+        String accessToken = authorization.substring(7);
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(userUsecase.lockAccount(user.getId(), refreshToken));
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Boolean> deleteAccount(@CookieValue(value = "accessToken") String accessToken) {
+        CommonUserResponseDTO user = userService.getMe(accessToken);
+
+        return ResponseEntity.ok(userUsecase.deleteAccount(user.getId()));
     }
 }

@@ -1,16 +1,19 @@
 package com.fckedu.exam_creation.security.infrastructure.filter;
 
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
+import com.fckedu.exam_creation.common.exception.UnAuthorizedException;
+import com.fckedu.exam_creation.security.dto.CookieDataDTO;
 import com.fckedu.exam_creation.security.infrastructure.provider.JwtTokenProvider;
 import com.fckedu.exam_creation.security.infrastructure.service.CustomUserDetailsService;
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.UnavailableException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -65,18 +68,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
         try {
-            String jwt = getJwtFromRequest(request);
+            CookieDataDTO jwt = getJwtFromRequest(request);
 
-            // 2. Validate token
-            if (jwt != null && tokenProvider.validateAccessToken(jwt)) {
+            if (jwt.getRefreshToken() == null || jwt.getRefreshToken().trim().isEmpty()) {
+                throw new UnAuthorizedException("Không có RT");
+            } else {
+                tokenProvider.validateRefreshToken(jwt.getRefreshToken());
+            }
 
-                // 3. Giải mã lấy ATPayload record bạn đã tạo
-                ATPayload payload = tokenProvider.getPayloadFromAccessToken(jwt);
+            // Validate token
+            if (jwt.getAccessToken() != null && tokenProvider.validateAccessToken(jwt.getAccessToken())) {
 
-                // 4. Load thông tin chi tiết của User (Sử dụng email làm định danh đăng nhập)
+                // Giải mã lấy ATPayload record bạn đã tạo
+                ATPayload payload = tokenProvider.getPayloadFromAccessToken(jwt.getAccessToken());
+
+                // Load thông tin chi tiết của User (Sử dụng email làm định danh đăng nhập)
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(payload.getEmail());
 
-                // 5. Cấp quyền và nhét vào SecurityContext
+                if (!userDetails.isEnabled()) {
+                    throw new UnavailableException("Tài khoản đã bị khóa!");
+                }
+
+                // Cấp quyền và nhét vào SecurityContext
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -91,11 +104,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // Hàm bổ trợ quét Cookie tìm "access_token"
-    private @Nullable String getJwtFromRequest(HttpServletRequest request) {
-        String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
+    private CookieDataDTO getJwtFromRequest(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        CookieDataDTO res = new CookieDataDTO();
+        for (Cookie cookie : cookies) {
+            if ("accessToken".equals(cookie.getName())) {
+                res.setAccessToken(cookie.getValue());
+            } else if ("refreshToken".equals(cookie.getName())) {
+                res.setRefreshToken(cookie.getValue());
+            }
         }
-        return null;
+
+        return res;
     }
 }

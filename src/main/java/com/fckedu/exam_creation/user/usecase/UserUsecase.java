@@ -1,6 +1,7 @@
 package com.fckedu.exam_creation.user.usecase;
 
 import com.fckedu.exam_creation.common.dto.refreshToken.request.NewRTRequestDTO;
+import com.fckedu.exam_creation.common.dto.refreshToken.response.RTResponseDTO;
 import com.fckedu.exam_creation.common.dto.token.ATPayload;
 import com.fckedu.exam_creation.common.dto.token.RTPayload;
 import com.fckedu.exam_creation.common.exception.InternalServerException;
@@ -11,16 +12,14 @@ import com.fckedu.exam_creation.security.service.SecurityService;
 import com.fckedu.exam_creation.storage.service.S3Service;
 import com.fckedu.exam_creation.user.domain.entity.UserEntity;
 import com.fckedu.exam_creation.user.dto.mapper.UserDTOMapper;
-import com.fckedu.exam_creation.user.dto.request.ChangePasswordRequestDTO;
-import com.fckedu.exam_creation.user.dto.request.LoginUserRequestDTO;
-import com.fckedu.exam_creation.user.dto.request.NewUserRequestDTO;
-import com.fckedu.exam_creation.user.dto.request.UpdateUserRequestDTO;
+import com.fckedu.exam_creation.user.dto.request.*;
 import com.fckedu.exam_creation.user.dto.response.AuthorizedResponseDTO;
 import com.fckedu.exam_creation.user.dto.response.UserResponseDTO;
 import com.fckedu.exam_creation.user.infrastructure.repository.UserRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,6 +49,7 @@ public class UserUsecase {
                 newUser.getLoginMethod(),
                 "avatars/default-avatar-user.png",
                 true,
+                "Free",
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );
@@ -91,6 +91,10 @@ public class UserUsecase {
 
         if (user.getLoginMethod().equals("GOOGLE")) {
             throw new UnAuthorizedException("Sai phương thức đăng nhập");
+        }
+
+        if (!user.getIsActive()) {
+            throw new UnAuthorizedException("Tài khoản đã bị khóa! Vui lòng liên hệ xxx để được mở khóa");
         }
 
         // Validate password
@@ -166,7 +170,11 @@ public class UserUsecase {
         return repo.save(user) != null;
     }
 
-    public boolean changePassword(String userId, ChangePasswordRequestDTO payload) {
+    public boolean changePassword(String userId, ChangePasswordRequestDTO reqPayload) {
+        ChangePasswordPayloadRequestDTO payload = reqPayload.getPayload();
+
+        RTPayload rtPayload = securityService.getPayloadFromRefreshToken(reqPayload.getRefreshToken());
+
         if (!payload.getNewPassword().equals(payload.getConfirmNewPassword())) {
             throw new UnAuthorizedException("Mật khẩu xác nhận của mật khẩu mới không trùng khớp");
         }
@@ -183,6 +191,71 @@ public class UserUsecase {
         String newHashedPassword = securityService.hashPassword(payload.getNewPassword());
 
         user.setHashedPassword(newHashedPassword);
+        UserEntity savedUser = repo.save(user);
+
+        if (savedUser != null) {
+            List<RTResponseDTO> rtResponseDTOS = refreshTokenService.getUserRefreshToken(savedUser.getId());
+
+            List<String> tokenJtis = rtResponseDTOS.stream().map(RTResponseDTO::getJti).toList();
+
+            List<String> jtisToDelete = tokenJtis.stream()
+                    .filter(token -> !token.equals(rtPayload.getJti()))
+                    .toList();
+
+            if (tokenJtis.isEmpty()) {
+                return true;
+            }
+
+            return refreshTokenService.deleteMany(jtisToDelete);
+        }
+        return false;
+    }
+
+    public boolean lockAccount(String userId, String refreshToken) {
+        UserEntity user = repo.findById(userId);
+
+        RTPayload rtPayload = securityService.getPayloadFromRefreshToken(refreshToken);
+
+        if (user == null) {
+            throw new NotFoundException("Không tìm thấy tài khoản");
+        }
+
+        user.setIsActive(false);
+
+        UserEntity savedUser = repo.save(user);
+
+        if (savedUser != null) {
+            List<RTResponseDTO> rtResponseDTOS = refreshTokenService.getUserRefreshToken(savedUser.getId());
+
+            List<String> tokenJtis = rtResponseDTOS.stream().map(RTResponseDTO::getJti).toList();
+
+            List<String> jtisToDelete = tokenJtis.stream()
+                    .filter(token -> !token.equals(rtPayload.getJti()))
+                    .toList();
+
+            if (jtisToDelete.isEmpty()) {
+                return true;
+            }
+
+            return refreshTokenService.deleteMany(jtisToDelete);
+        }
         return repo.save(user) != null;
+    }
+
+    public boolean deleteAccount(String userId) {
+        boolean isDeleted = repo.delete(userId);
+
+        if (isDeleted) {
+            List<RTResponseDTO> rtResponseDTOS = refreshTokenService.getUserRefreshToken(userId);
+
+            List<String> tokenJtis = rtResponseDTOS.stream().map(RTResponseDTO::getJti).toList();
+
+            if (tokenJtis.isEmpty()) {
+                return true;
+            }
+
+            return refreshTokenService.deleteMany(tokenJtis);
+        }
+        return false;
     }
 }

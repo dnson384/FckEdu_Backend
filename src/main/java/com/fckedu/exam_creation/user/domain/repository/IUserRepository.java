@@ -10,4 +10,6 @@ public interface IUserRepository {
     UserEntity save(UserEntity newUser);
 
     UserEntity findById(String userId);
+
+    boolean delete(String userId);
 }
