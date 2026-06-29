@@ -25,6 +25,7 @@ public class UserDocument {
     private String loginMethod;
     private String avatarUrl;
     private Boolean isActive;
+    private String accountType;
 
     @CreatedDate
     private LocalDateTime createdAt;

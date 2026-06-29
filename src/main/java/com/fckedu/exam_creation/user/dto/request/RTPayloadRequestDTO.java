@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChangePasswordRequestDTO {
-    private ChangePasswordPayloadRequestDTO payload;
+public class RTPayloadRequestDTO {
     private String refreshToken;
 }

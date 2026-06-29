@@ -1,4 +1,4 @@
-package com.fckedu.exam_creation.user.dto.request;
+package com.fckedu.exam_creation.security.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChangePasswordRequestDTO {
-    private ChangePasswordPayloadRequestDTO payload;
+public class CookieDataDTO {
+    private String accessToken;
     private String refreshToken;
 }

@@ -18,6 +18,7 @@ public class UserEntity {
     private String loginMethod;
     private String avatarUrl;
     private Boolean isActive;
+    private String accountType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
